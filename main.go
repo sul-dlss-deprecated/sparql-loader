@@ -23,7 +23,8 @@ func Handler(ctx context.Context, request events.APIGatewayProxyRequest) (string
 	form := url.Values{}
 	form.Add("update", request.Body)
 
-	proxyReq, err := http.NewRequest("POST", os.Getenv("RIALTO_SPARQL_ENDPOINT"), strings.NewReader(form.Encode()))
+	// proxyReq, err := http.NewRequest("POST", os.Getenv("RIALTO_SPARQL_ENDPOINT"), strings.NewReader(form.Encode()))
+	proxyReq, err := http.NewRequest("POST", os.Getenv("RIALTO_SPARQL_ENDPOINT"), strings.NewReader(request.Body))
 	proxyReq.Header = make(http.Header)
 
 	proxyReq.Header.Add("Content-type", "application/x-www-form-urlencoded")
@@ -36,9 +37,11 @@ func Handler(ctx context.Context, request events.APIGatewayProxyRequest) (string
 		return string(respBody), err
 	}
 
-	err = sendMessage(request.Body)
-	if err != nil {
-		return "Error sending SNS message", err
+	if strings.HasPrefix(request.Body, "update=") {
+		err = sendMessage(request.Body)
+		if err != nil {
+			return "Error sending SNS message", err
+		}
 	}
 	resp.Body.Close()
 	return string(respBody), nil
