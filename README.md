@@ -2,6 +2,18 @@
 
 Note: This is the initial setup of a lambda to proxy to the AWS Neptune SPARQL endpoint. Some of the steps below may need editing.
 
+## Calling a lambda over http through API Gateway
+
+```
+curl -i -d@./basic_insert.txt -X POST https://<API_GATEWAY_ENDPOINT>/<DEPLOYMENT}>
+```
+
+Where `basic_insert.txt` is a text file with a sparql query like:
+```
+PREFIX dc: <http://purl.org/dc/elements/1.1/> INSERT DATA { <http://example/book3> dc:title    'A new book' ; dc:creator  'A.N.Other' . }
+```
+
+## Create and upload the lambda
 1. Create a zip
 ```
 GOOS=linux go build -o main
