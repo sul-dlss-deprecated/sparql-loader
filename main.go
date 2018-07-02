@@ -5,7 +5,6 @@ import (
 	"fmt"
 	"io/ioutil"
 	"net/http"
-	"net/url"
 	"os"
 	"strconv"
 	"strings"
@@ -19,16 +18,11 @@ import (
 
 // Handler is the Lambda function handler
 func Handler(ctx context.Context, request events.APIGatewayProxyRequest) (string, error) {
-
-	form := url.Values{}
-	form.Add("update", request.Body)
-
-	// proxyReq, err := http.NewRequest("POST", os.Getenv("RIALTO_SPARQL_ENDPOINT"), strings.NewReader(form.Encode()))
 	proxyReq, err := http.NewRequest("POST", os.Getenv("RIALTO_SPARQL_ENDPOINT"), strings.NewReader(request.Body))
 	proxyReq.Header = make(http.Header)
 
 	proxyReq.Header.Add("Content-type", "application/x-www-form-urlencoded")
-	proxyReq.Header.Set("Content-Length", strconv.Itoa(len(form.Encode())))
+	proxyReq.Header.Set("Content-Length", strconv.Itoa(len(request.Body)))
 
 	httpClient := http.Client{}
 	resp, err := httpClient.Do(proxyReq)
