@@ -2,6 +2,7 @@ package main
 
 import (
 	"context"
+	"fmt"
 	"io/ioutil"
 	"net/http"
 	"net/url"
@@ -11,6 +12,9 @@ import (
 
 	"github.com/aws/aws-lambda-go/events"
 	"github.com/aws/aws-lambda-go/lambda"
+	"github.com/aws/aws-sdk-go/aws"
+	"github.com/aws/aws-sdk-go/aws/session"
+	"github.com/aws/aws-sdk-go/service/sns"
 )
 
 // Handler is the Lambda function handler
@@ -18,9 +22,11 @@ func Handler(ctx context.Context, request events.APIGatewayProxyRequest) (string
 
 	form := url.Values{}
 	form.Add("update", request.Body)
+
 	proxyReq, err := http.NewRequest("POST", os.Getenv("RIALTO_SPARQL_ENDPOINT"), strings.NewReader(form.Encode()))
 	proxyReq.Header = make(http.Header)
 
+	proxyReq.Header.Add("Content-type", "application/x-www-form-urlencoded")
 	proxyReq.Header.Set("Content-Length", strconv.Itoa(len(form.Encode())))
 
 	httpClient := http.Client{}
@@ -30,9 +36,10 @@ func Handler(ctx context.Context, request events.APIGatewayProxyRequest) (string
 		return string(respBody), err
 	}
 
-	/*
-		sp.sendMessage(body)
-	*/
+	err = sendMessage(request.Body)
+	if err != nil {
+		return "Error sending SNS message", err
+	}
 	resp.Body.Close()
 	return string(respBody), nil
 }
@@ -41,9 +48,17 @@ func main() {
 	lambda.Start(Handler)
 }
 
-/*
-func (sp *sparqlProxy) sendMessage(document string) error {
+func sendMessage(document string) error {
 	message := fmt.Sprintf("{\"action\": \"sparql_update\", \"document\": %s}", document)
-	return sp.messageService.Publish(message)
+	topicArn := os.Getenv("RIALTO_TOPIC_ARN")
+	endpoint := os.Getenv("RIALTO_SNS_ENDPOINT")
+	snsConn := sns.New(session.New(), aws.NewConfig().
+		WithDisableSSL(false).
+		WithEndpoint(endpoint))
+	input := &sns.PublishInput{
+		Message:  aws.String(message),
+		TopicArn: &topicArn,
+	}
+	_, err := snsConn.Publish(input)
+	return err
 }
-*/
