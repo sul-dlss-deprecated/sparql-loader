@@ -46,7 +46,7 @@ func main() {
 }
 
 func sendMessage(document string) error {
-	message := fmt.Sprintf("{\"action\": \"sparql_update\", \"document\": %s}", document)
+	message := fmt.Sprintf("{\"action\": \"touch\", \"body\": %s}", document)
 	topicArn := os.Getenv("RIALTO_TOPIC_ARN")
 	endpoint := os.Getenv("RIALTO_SNS_ENDPOINT")
 	snsConn := sns.New(session.New(), aws.NewConfig().
