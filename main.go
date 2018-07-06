@@ -14,6 +14,7 @@ import (
 	"github.com/aws/aws-sdk-go/aws"
 	"github.com/aws/aws-sdk-go/aws/session"
 	"github.com/aws/aws-sdk-go/service/sns"
+	"github.com/sul-dlss-labs/sparql"
 )
 
 // Handler is the Lambda function handler
@@ -32,7 +33,11 @@ func Handler(ctx context.Context, request events.APIGatewayProxyRequest) (string
 	}
 
 	if strings.HasPrefix(request.Body, "update=") {
-		err = sendMessage(request.Body)
+		sparqlQuery := sparql.NewSparql()
+		err = sparqlQuery.Parse(strings.NewReader(request.Body))
+
+		subjects := uniqueSubjects(sparqlQuery.Triples)
+		err = sendMessage(strings.Join(subjects, "\", \""), request.Body)
 		if err != nil {
 			return "Error sending SNS message", err
 		}
@@ -45,8 +50,22 @@ func main() {
 	lambda.Start(Handler)
 }
 
-func sendMessage(document string) error {
-	message := fmt.Sprintf("{\"action\": \"touch\", \"body\": %s}", document)
+func uniqueSubjects(in []sparql.Triple) []string {
+	u := make([]string, 0, len(in))
+	m := make(map[string]bool)
+
+	for _, val := range in {
+		if _, ok := m[val.Subject]; !ok {
+			m[val.Subject] = true
+			u = append(u, val.Subject)
+		}
+	}
+
+	return u
+}
+
+func sendMessage(subjects string, document string) error {
+	message := fmt.Sprintf("{\"action\": \"touch\", \"entities\": [\"%s\"], \"body\": \"%s\"}", subjects, document)
 	topicArn := os.Getenv("RIALTO_TOPIC_ARN")
 	endpoint := os.Getenv("RIALTO_SNS_ENDPOINT")
 	snsConn := sns.New(session.New(), aws.NewConfig().
