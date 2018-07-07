@@ -14,7 +14,7 @@ import (
 	"github.com/aws/aws-sdk-go/aws"
 	"github.com/aws/aws-sdk-go/aws/session"
 	"github.com/aws/aws-sdk-go/service/sns"
-	"github.com/sul-dlss-labs/sparql"
+	"github.com/sul-dlss-labs/sparql-loader/sparql"
 )
 
 // Handler is the Lambda function handler
@@ -33,13 +33,22 @@ func Handler(ctx context.Context, request events.APIGatewayProxyRequest) (string
 	}
 
 	if strings.HasPrefix(request.Body, "update=") {
-		sparqlQuery := sparql.NewSparql()
+		sparqlQuery := sparql.NewQuery()
 		err = sparqlQuery.Parse(strings.NewReader(request.Body))
 
-		subjects := uniqueSubjects(sparqlQuery.Triples)
-		err = sendMessage(strings.Join(subjects, "\", \""), request.Body)
-		if err != nil {
-			return "Error sending SNS message", err
+		for _, part := range sparqlQuery.Parts {
+			if strings.ToUpper(part.Verb) == "INSERT" || strings.ToUpper(part.Verb) == "INSERT DATA" {
+				err = sendMessage("touch", strings.Join(uniqueSubjects(part.Graph), "\", \""), request.Body)
+				if err != nil {
+					return "Error sending SNS message", err
+				}
+			}
+			if strings.ToUpper(part.Verb) == "DELETE" || strings.ToUpper(part.Verb) == "DELETE DATA" {
+				err = sendMessage("delete", strings.Join(uniqueSubjects(part.Graph), "\", \""), request.Body)
+				if err != nil {
+					return "Error sending SNS message", err
+				}
+			}
 		}
 	}
 	resp.Body.Close()
@@ -64,8 +73,8 @@ func uniqueSubjects(in []sparql.Triple) []string {
 	return u
 }
 
-func sendMessage(subjects string, document string) error {
-	message := fmt.Sprintf("{\"action\": \"touch\", \"entities\": [\"%s\"], \"body\": \"%s\"}", subjects, document)
+func sendMessage(action string, subjects string, document string) error {
+	message := fmt.Sprintf("{\"action\": \"%s\", \"entities\": [\"%s\"], \"body\": \"%s\"}", action, subjects, document)
 	topicArn := os.Getenv("RIALTO_TOPIC_ARN")
 	endpoint := os.Getenv("RIALTO_SNS_ENDPOINT")
 	snsConn := sns.New(session.New(), aws.NewConfig().
