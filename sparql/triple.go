@@ -14,7 +14,7 @@ type Triple struct {
 	Object    string
 }
 
-// NewTriple takes a string and default subject
+// NewTriple takes a string and default subject, scans the content and returns a Triple
 func (query *Query) NewTriple(line string, defaultSubject string) Triple {
 	byt, _ := ioutil.ReadAll(strings.NewReader(line))
 	scan := new(scanner.Scanner).Init(bytes.NewReader(byt))
@@ -43,16 +43,18 @@ func (query *Query) NewTriple(line string, defaultSubject string) Triple {
 		tripleArray = append(tripleArray, objectLiteral)
 	}
 	if len(tripleArray) != 3 {
-		return Triple{
-			Subject:   defaultSubject,
-			Predicate: query.replacePrefix(tripleArray[0]),
-			Object:    query.replacePrefix(tripleArray[1])}
+		tripleArray = append([]string{defaultSubject}, tripleArray...)
+		return query.setTriple(tripleArray)
 	}
+	return query.setTriple(tripleArray)
+
+}
+
+func (query *Query) setTriple(tripleArray []string) Triple {
 	return Triple{
 		Subject:   query.replacePrefix(tripleArray[0]),
 		Predicate: query.replacePrefix(tripleArray[1]),
 		Object:    query.replacePrefix(tripleArray[2])}
-
 }
 
 func (query *Query) replacePrefix(input string) string {
