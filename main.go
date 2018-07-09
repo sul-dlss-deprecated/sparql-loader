@@ -19,6 +19,14 @@ import (
 
 // Handler is the Lambda function handler
 func Handler(ctx context.Context, request events.APIGatewayProxyRequest) (string, error) {
+	// MAP of queries that will trigger a message to SNS
+	knownQueries := map[string]bool{
+		"INSERT":      true,
+		"INSERT DATA": true,
+		"DELETE":      true,
+		"DELETE DATA": true,
+	}
+
 	proxyReq, err := http.NewRequest("POST", os.Getenv("RIALTO_SPARQL_ENDPOINT"), strings.NewReader(request.Body))
 	proxyReq.Header = make(http.Header)
 
@@ -37,14 +45,8 @@ func Handler(ctx context.Context, request events.APIGatewayProxyRequest) (string
 		err = sparqlQuery.Parse(strings.NewReader(request.Body))
 
 		for _, part := range sparqlQuery.Parts {
-			if strings.ToUpper(part.Verb) == "INSERT" || strings.ToUpper(part.Verb) == "INSERT DATA" {
-				err = sendMessage("touch", strings.Join(uniqueSubjects(part.Graph), "\", \""), request.Body)
-				if err != nil {
-					return "Error sending SNS message", err
-				}
-			}
-			if strings.ToUpper(part.Verb) == "DELETE" || strings.ToUpper(part.Verb) == "DELETE DATA" {
-				err = sendMessage("delete", strings.Join(uniqueSubjects(part.Graph), "\", \""), request.Body)
+			if knownQueries[strings.ToUpper(part.Verb)] {
+				err = sendMessage("touch", uniqueSubjects(part.Graph), request.Body)
 				if err != nil {
 					return "Error sending SNS message", err
 				}
@@ -73,8 +75,8 @@ func uniqueSubjects(in []sparql.Triple) []string {
 	return u
 }
 
-func sendMessage(action string, subjects string, document string) error {
-	message := fmt.Sprintf("{\"action\": \"%s\", \"entities\": [\"%s\"], \"body\": \"%s\"}", action, subjects, document)
+func sendMessage(action string, subjects []string, document string) error {
+	message := fmt.Sprintf("{\"action\": \"%s\", \"entities\": [\"%s\"], \"body\": \"%s\"}", action, strings.Join(subjects, "\", \""), document)
 	topicArn := os.Getenv("RIALTO_TOPIC_ARN")
 	endpoint := os.Getenv("RIALTO_SNS_ENDPOINT")
 	snsConn := sns.New(session.New(), aws.NewConfig().
