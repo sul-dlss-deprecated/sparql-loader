@@ -1,0 +1,11 @@
+@prefix ex: <http://example/> 
+@prefix dc: <http://purl.org/dc/elements/1.1/> 
+
+DELETE { ex:book3 ?p ?o }
+INSERT { ex:book3 dc:title "Updated title" ;
+                 dc:description "my long ass abstract" ;
+                 rdf:type ex:Book .  
+}
+WHERE  { 
+        ex:book3 ?p ?o . 
+}
