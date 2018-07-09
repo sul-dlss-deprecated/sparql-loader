@@ -4,9 +4,10 @@ import (
 	"bytes"
 	"io/ioutil"
 	"log"
-	"reflect"
 	"strings"
 	"testing"
+
+	"github.com/stretchr/testify/assert"
 )
 
 func TestParse(t *testing.T) {
@@ -49,9 +50,7 @@ func TestParse(t *testing.T) {
 			for i, qq := range query.Parts {
 				query.Parts[i].Body = strings.Replace(strings.Replace(qq.Body, " ", "", -1), "\n", "", -1)
 			}
-			if !reflect.DeepEqual(query, tt.out) {
-				t.Errorf("ERROR")
-			}
+			assert.Equal(t, query, tt.out)
 		}
 	}
 }

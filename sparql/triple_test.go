@@ -2,6 +2,8 @@ package sparql
 
 import (
 	"testing"
+
+	"github.com/stretchr/testify/assert"
 )
 
 func TestNewTriple(t *testing.T) {
@@ -35,8 +37,6 @@ func TestNewTriple(t *testing.T) {
 
 	for _, tt := range graphTests {
 		actual := query.NewTriple(tt.in, "")
-		if actual != tt.out {
-			t.Errorf("ERROR")
-		}
+		assert.Equal(t, tt.out, actual)
 	}
 }
