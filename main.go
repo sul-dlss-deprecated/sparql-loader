@@ -4,6 +4,7 @@ import (
 	"context"
 	"fmt"
 	"io/ioutil"
+	"log"
 	"net/http"
 	"os"
 	"strconv"
@@ -42,12 +43,15 @@ func Handler(ctx context.Context, request events.APIGatewayProxyRequest) (string
 
 	if strings.HasPrefix(request.Body, "update=") {
 		sparqlQuery := sparql.NewQuery()
-		err = sparqlQuery.Parse(strings.NewReader(request.Body))
+		err = sparqlQuery.Parse(strings.NewReader(strings.Replace(request.Body, "update=", "", -1)))
+		log.Printf("SENDING MESSAGE: %+v", sparqlQuery)
 
 		for _, part := range sparqlQuery.Parts {
 			if knownQueries[strings.ToUpper(part.Verb)] {
+				log.Printf("SENDING MESSAGE")
 				err = sendMessage("touch", uniqueSubjects(part.Graph), request.Body)
 				if err != nil {
+					log.Printf("ERROR SENDING MESSAGE")
 					return "Error sending SNS message", err
 				}
 			}
