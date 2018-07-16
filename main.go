@@ -80,7 +80,7 @@ func uniqueSubjects(in []sparql.Triple) []string {
 }
 
 func sendMessage(action string, subjects []string, document string) error {
-	message := fmt.Sprintf("{\"action\": \"%s\", \"entities\": [\"%s\"], \"body\": \"%s\"}", action, strings.Join(subjects, "\", \""), document)
+	message := fmt.Sprintf("{\"Action\": \"%s\", \"Entities\": [\"%s\"], \"Body\": \"\"}", action, strings.Join(subjects, "\", \""))
 	topicArn := os.Getenv("RIALTO_TOPIC_ARN")
 	endpoint := os.Getenv("RIALTO_SNS_ENDPOINT")
 	snsConn := sns.New(session.New(), aws.NewConfig().
