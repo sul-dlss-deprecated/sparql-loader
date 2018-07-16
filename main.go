@@ -70,6 +70,8 @@ func uniqueSubjects(in []sparql.Triple) []string {
 	m := make(map[string]bool)
 
 	for _, val := range in {
+		val.Subject = strings.Replace(val.Subject, "<", "", -1)
+		val.Subject = strings.Replace(val.Subject, ">", "", -1)
 		if _, ok := m[val.Subject]; !ok {
 			m[val.Subject] = true
 			u = append(u, val.Subject)
