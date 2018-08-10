@@ -53,16 +53,13 @@ func (query *Query) Parse(src io.Reader) error {
 			}
 
 		case 123: // { - starts the main content blocks
-			// if level == 0 {
 			start = s.Position.Offset
 			contentStart = start
 			bodySet = false
-			// }
 			level++
 
 		case 125: // } - ends the main content blocks
 			level--
-			// if level > 0 && !namedGraph {
 			if len(strings.Join(strings.Fields(string(b[start+1:s.Position.Offset])), "")) > 0 {
 				if !bodySet {
 					if len(triples) == 0 {
