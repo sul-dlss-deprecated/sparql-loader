@@ -79,7 +79,6 @@ func TestParse(t *testing.T) {
 		if err != nil {
 			t.Errorf("ERROR")
 		} else {
-			// log.Printf("PARTS: %v", query.Parts)
 			for i, qq := range query.Parts {
 				query.Parts[i].Body = strings.Replace(strings.Replace(qq.Body, " ", "", -1), "\n", "", -1)
 			}
