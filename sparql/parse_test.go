@@ -11,6 +11,7 @@ import (
 )
 
 func TestParse(t *testing.T) {
+	var testGraph = "http://sul.stanford.edu/rialto/sources/test2"
 	var parseTests = []struct {
 		filename string
 		out      Query
@@ -32,7 +33,7 @@ func TestParse(t *testing.T) {
 					Body: `<http://example/book3><http://purl.org/dc/elements/1.1/title>"Anewbook";<http://purl.org/dc/elements/1.1/creator>"A.N.Other".`,
 				}},
 				Prefixes:   map[string]string{},
-				NamedGraph: "",
+				NamedGraph: nil,
 			},
 		}, {
 			filename: "fixtures/example_with_graph_2.txt",
@@ -63,7 +64,7 @@ func TestParse(t *testing.T) {
 					Body: `<http://sul.stanford.edu/rialto/context/positions/capFaculty_Bio-ABC_3784><http://vivoweb.org/ontology/core#hrJobTitle>"GeorgeA.ZimmermannProfessorandProfessorofPediatrics".<http://sul.stanford.edu/rialto/agents/orgs/Child_Health_Research_Institute><http://vivoweb.org/ontology/core#relatedBy><http://sul.stanford.edu/rialto/context/positions/capFaculty_Child_Health_Research_Institute_3784>.<http://sul.stanford.edu/rialto/context/positions/capFaculty_Stanford_Neurosciences_Institute_3784><http://vivoweb.org/ontology/core#relates><http://sul.stanford.edu/rialto/agents/people/3784>.<http://sul.stanford.edu/rialto/agents/people/3784><http://vivoweb.org/ontology/core#relatedBy><http://sul.stanford.edu/rialto/context/relationships/75872_3784>.<http://sul.stanford.edu/rialto/context/names/75872><http://www.w3.org/2006/vcard/ns#given-name>"Noga".`,
 				}},
 				Prefixes:   map[string]string{},
-				NamedGraph: "http://sul.stanford.edu/rialto/sources/test2",
+				NamedGraph: &testGraph,
 			},
 		},
 	}

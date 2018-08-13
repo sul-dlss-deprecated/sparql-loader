@@ -11,7 +11,7 @@ type Sparql struct {
 type Query struct {
 	Parts      []Sparql
 	Prefixes   map[string]string
-	NamedGraph string
+	NamedGraph *string
 }
 
 // NewQuery returns an empty Sparql struct to the calling method

@@ -110,8 +110,9 @@ func (query *Query) Parse(src io.Reader) error {
 					verb = ""
 				}
 			} else {
-				if namedGraph && query.NamedGraph == "" {
-					query.NamedGraph = string(b[uriStart+1 : s.Position.Offset])
+				if namedGraph && query.NamedGraph == nil {
+					namedGraphURI := string(b[uriStart+1 : s.Position.Offset])
+					query.NamedGraph = &namedGraphURI
 				}
 				uriStart = 0
 			}
