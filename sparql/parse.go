@@ -19,6 +19,8 @@ func (query *Query) Parse(src io.Reader) error {
 	uriStart := 0
 	prefixStart := 0
 	contentStart := 0
+	namedGraph := false
+	bodySet := false
 	level := 0
 
 	// Content Variables
@@ -40,39 +42,45 @@ func (query *Query) Parse(src io.Reader) error {
 				}
 				verb += s.TokenText()
 			} else {
-				if len(content) > 0 {
+				if strings.ToUpper(content) == "GRAPH" {
+					// We have a named graph in the insert here
+					content = "" // clear out the content
+					namedGraph = true
+				} else if len(content) > 0 {
 					content += " "
 				}
 				content += s.TokenText()
 			}
 
 		case 123: // { - starts the main content blocks
-			if level == 0 {
-				start = s.Position.Offset
-				contentStart = start
-			}
+			start = s.Position.Offset
+			contentStart = start
+			bodySet = false
 			level++
 
 		case 125: // } - ends the main content blocks
 			level--
-			if level == 0 {
-				if len(triples) == 0 {
-					triple := query.NewTriple(string(b[contentStart+1:s.Position.Offset]), currentSubject)
-					triples = append(triples, triple)
+			if len(strings.Join(strings.Fields(string(b[start+1:s.Position.Offset])), "")) > 0 {
+				if !bodySet {
+					if len(triples) == 0 {
+						triple := query.NewTriple(string(b[contentStart+1:s.Position.Offset]), currentSubject)
+						triples = append(triples, triple)
+					}
+					query.Parts = append(query.Parts, Sparql{
+						Verb:  verb,
+						Body:  string(b[start+1 : s.Position.Offset]),
+						Graph: triples,
+					})
+					// Reset variables
+					triples = []Triple{}
+					verb = ""
+					bodySet = true
 				}
-				query.Parts = append(query.Parts, Sparql{
-					Verb:  verb,
-					Body:  string(b[start+1 : s.Position.Offset]),
-					Graph: triples,
-				})
-				// Reset variables
-				triples = []Triple{}
-				verb = ""
 			}
 
 		case 46: // .
 			// If inside of a content block AND NOT inside of a URI block, construct a triple for this line
-			if level == 1 {
+			if level > 0 {
 				if uriStart == 0 {
 					triple := query.NewTriple(string(b[contentStart+1:s.Position.Offset]), currentSubject)
 					triples = append(triples, triple)
@@ -102,6 +110,10 @@ func (query *Query) Parse(src io.Reader) error {
 					verb = ""
 				}
 			} else {
+				if namedGraph && query.NamedGraph == nil {
+					namedGraphURI := string(b[uriStart+1 : s.Position.Offset])
+					query.NamedGraph = &namedGraphURI
+				}
 				uriStart = 0
 			}
 
