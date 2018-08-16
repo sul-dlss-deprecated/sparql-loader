@@ -4,6 +4,7 @@ import (
 	"context"
 	"fmt"
 	"io/ioutil"
+	"log"
 	"net/http"
 	"os"
 	"strconv"
@@ -27,7 +28,7 @@ func Handler(ctx context.Context, request events.APIGatewayProxyRequest) (string
 		"DELETE DATA": true,
 	}
 
-	proxyReq, err := http.NewRequest("POST", os.Getenv("RIALTO_SPARQL_ENDPOINT"), strings.NewReader(request.Body))
+	proxyReq, _ := http.NewRequest("POST", os.Getenv("RIALTO_SPARQL_ENDPOINT"), strings.NewReader(request.Body))
 	proxyReq.Header = make(http.Header)
 
 	proxyReq.Header.Add("Content-type", "application/x-www-form-urlencoded")
@@ -40,9 +41,14 @@ func Handler(ctx context.Context, request events.APIGatewayProxyRequest) (string
 		return string(respBody), err
 	}
 
+	if resp.StatusCode == 400 {
+		log.Printf("There was a problem with the request (%v) %s", resp.StatusCode, respBody)
+		return fmt.Sprintf("[BadRequest] %s", respBody), nil
+	}
+
 	if strings.HasPrefix(request.Body, "update=") {
 		sparqlQuery := sparql.NewQuery()
-		err = sparqlQuery.Parse(strings.NewReader(strings.Replace(request.Body, "update=", "", -1)))
+		_ = sparqlQuery.Parse(strings.NewReader(strings.Replace(request.Body, "update=", "", -1)))
 
 		for _, part := range sparqlQuery.Parts {
 			if knownQueries[strings.ToUpper(part.Verb)] {
