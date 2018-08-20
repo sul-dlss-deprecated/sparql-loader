@@ -60,7 +60,7 @@ jobs:
             aws configure set region $AWS_REGION
             aws configure set default.output json
             aws configure list  # Get confirmation it worked in your logs
-            aws lambda update-function-code --function-name sparqlProxy --zip-file fileb://lambda.zip
+            aws lambda update-function-code --function-name rialto-sparql-loader-development --zip-file fileb://lambda.zip
 
 workflows:
   version: 2
