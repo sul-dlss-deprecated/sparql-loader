@@ -1,4 +1,8 @@
-# Running a lambda on localstack with API Gateway
+# Rialto SparqlLoader
+
+[![CircleCI](https://circleci.com/gh/sul-dlss-labs/sparql-loader.svg?style=svg)](https://circleci.com/gh/sul-dlss-labs/sparql-loader)
+
+## Running a lambda on localstack with API Gateway
 
 Note: This is the initial setup of a lambda to proxy to the AWS Neptune SPARQL endpoint. Some of the steps below may need editing.
 
