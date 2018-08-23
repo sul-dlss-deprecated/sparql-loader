@@ -29,7 +29,7 @@ func Handler(ctx context.Context, request events.APIGatewayProxyRequest) (string
 		"DELETE DATA": true,
 	}
 
-	proxyReq, err := http.NewRequest("POST", os.Getenv("RIALTO_SPARQL_ENDPOINT"), strings.NewReader(encodeBody(request.Body)))
+	proxyReq, _ := http.NewRequest("POST", os.Getenv("RIALTO_SPARQL_ENDPOINT"), strings.NewReader(encodeBody(request.Body)))
 	proxyReq.Header = make(http.Header)
 
 	proxyReq.Header.Add("Content-type", "application/x-www-form-urlencoded")
