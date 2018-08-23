@@ -29,17 +29,7 @@ func Handler(ctx context.Context, request events.APIGatewayProxyRequest) (string
 		"DELETE DATA": true,
 	}
 
-	log.Printf("API GATEWAY REQUEST: %+v", request)
-
-	// The body that we get from API gateway is decoded, so we need to re-encode it
-	// However, we need to first remove the query/upadte directive before encoding.
-	bodyIn := request.Body
-	i := strings.Index(bodyIn, "=")
-	queryPrefix := bodyIn[:i]
-	bodyIn = bodyIn[i+1:]
-	bodyIn = fmt.Sprintf("%s=%s", queryPrefix, url.QueryEscape(bodyIn))
-
-	proxyReq, err := http.NewRequest("POST", os.Getenv("RIALTO_SPARQL_ENDPOINT"), strings.NewReader(bodyIn))
+	proxyReq, err := http.NewRequest("POST", os.Getenv("RIALTO_SPARQL_ENDPOINT"), strings.NewReader(encodeBody(request.Body)))
 	proxyReq.Header = make(http.Header)
 
 	proxyReq.Header.Add("Content-type", "application/x-www-form-urlencoded")
@@ -59,7 +49,7 @@ func Handler(ctx context.Context, request events.APIGatewayProxyRequest) (string
 		return fmt.Sprintf("[BadRequest] %s", respBody), nil
 	}
 
-	log.Printf("NEPTUNE SUCCESS: %s", string(respBody))
+	log.Printf("NEPTUNE [SUCCESS]: %s", string(respBody))
 
 	if strings.HasPrefix(request.Body, "update=") {
 		sparqlQuery := sparql.NewQuery()
@@ -80,6 +70,16 @@ func Handler(ctx context.Context, request events.APIGatewayProxyRequest) (string
 
 func main() {
 	lambda.Start(Handler)
+}
+
+func encodeBody(bodyIn string) string {
+	// The body that we get from API gateway is decoded, so we need to re-encode it
+	// However, we need to first remove the query/update directive before encoding.
+	i := strings.Index(bodyIn, "=")
+	queryPrefix := bodyIn[:i]
+	bodyIn = bodyIn[i+1:]
+	bodyIn = fmt.Sprintf("%s=%s", queryPrefix, url.QueryEscape(bodyIn))
+	return bodyIn
 }
 
 func uniqueSubjects(in []sparql.Triple) []string {
