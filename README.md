@@ -5,7 +5,12 @@ Note: This is the initial setup of a lambda to proxy to the AWS Neptune SPARQL e
 ## Calling a lambda over http through API Gateway
 
 ```
-curl -i -d@./basic_insert.txt -X POST https://<API_GATEWAY_ENDPOINT>/<DEPLOYMENT}>
+curl -i -d@./basic_insert.txt -X POST https://<API_GATEWAY_ENDPOINT>/<DEPLOYMENT}/<ENDPOINT>
+```
+
+### For SPARQL-LOADER:
+```
+curl -i -d@./basic_insert.txt -X 'X-API-Key: <API KEY>' https://g6x94d9jg0.execute-api.us-west-2.amazonaws.com/development/rialto-sparql-loader-development
 ```
 
 Where `basic_insert.txt` is a text file with a sparql query like:
