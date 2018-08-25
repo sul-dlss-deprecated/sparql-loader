@@ -29,6 +29,8 @@ func Handler(ctx context.Context, request events.APIGatewayProxyRequest) (string
 		"DELETE DATA": true,
 	}
 
+	log.Printf("REQUST BODY: %s", request.Body)
+
 	proxyReq, _ := http.NewRequest("POST", os.Getenv("RIALTO_SPARQL_ENDPOINT"), encodeBody(request.Body))
 	proxyReq.Header = make(http.Header)
 
@@ -75,10 +77,13 @@ func main() {
 func encodeBody(bodyIn string) *strings.Reader {
 	// The body that we get from API gateway is decoded, so we need to re-encode it
 	// However, we need to first remove the query/update directive before encoding.
-	i := strings.Index(bodyIn, "=")
-	queryPrefix := bodyIn[:i]
-	bodyIn = bodyIn[i+1:]
-	bodyIn = fmt.Sprintf("%s=%s", queryPrefix, url.QueryEscape(bodyIn))
+	isUnescaped, _ := url.QueryUnescape(bodyIn)
+	if bodyIn == isUnescaped {
+		i := strings.Index(bodyIn, "=")
+		queryPrefix := bodyIn[:i]
+		bodyIn = bodyIn[i+1:]
+		bodyIn = fmt.Sprintf("%s=%s", queryPrefix, url.QueryEscape(bodyIn))
+	}
 	return strings.NewReader(bodyIn)
 }
 
