@@ -55,7 +55,9 @@ func Handler(ctx context.Context, request events.APIGatewayProxyRequest) (string
 
 	if strings.HasPrefix(request.Body, "update=") {
 		sparqlQuery := sparql.NewQuery()
-		_ = sparqlQuery.Parse(strings.NewReader(strings.Replace(request.Body, "update=", "", -1)))
+
+		queryString, _ := url.QueryUnescape(strings.Replace(request.Body, "update=", "", -1))
+		_ = sparqlQuery.Parse(strings.NewReader(queryString))
 
 		for _, part := range sparqlQuery.Parts {
 			if knownQueries[strings.ToUpper(part.Verb)] {
