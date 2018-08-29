@@ -29,7 +29,13 @@ func Handler(ctx context.Context, request events.APIGatewayProxyRequest) (string
 		"DELETE DATA": true,
 	}
 
-	proxyReq, _ := http.NewRequest("POST", os.Getenv("RIALTO_SPARQL_ENDPOINT"), encodeBody(request.Body))
+	log.Printf("REQUST BODY: %s", request.Body)
+
+	if unEscaped(request.Body) {
+		return fmt.Sprintf("[BadRequest] %s", request.Body), fmt.Errorf("[BadRequest] Unescaped query string detected")
+	}
+
+	proxyReq, _ := http.NewRequest("POST", os.Getenv("RIALTO_SPARQL_ENDPOINT"), strings.NewReader(request.Body))
 	proxyReq.Header = make(http.Header)
 
 	proxyReq.Header.Add("Content-type", "application/x-www-form-urlencoded")
@@ -53,7 +59,9 @@ func Handler(ctx context.Context, request events.APIGatewayProxyRequest) (string
 
 	if strings.HasPrefix(request.Body, "update=") {
 		sparqlQuery := sparql.NewQuery()
-		_ = sparqlQuery.Parse(strings.NewReader(strings.Replace(request.Body, "update=", "", -1)))
+
+		queryString, _ := url.QueryUnescape(strings.Replace(request.Body, "update=", "", -1))
+		_ = sparqlQuery.Parse(strings.NewReader(queryString))
 
 		for _, part := range sparqlQuery.Parts {
 			if knownQueries[strings.ToUpper(part.Verb)] {
@@ -72,14 +80,12 @@ func main() {
 	lambda.Start(Handler)
 }
 
-func encodeBody(bodyIn string) *strings.Reader {
-	// The body that we get from API gateway is decoded, so we need to re-encode it
-	// However, we need to first remove the query/update directive before encoding.
-	i := strings.Index(bodyIn, "=")
-	queryPrefix := bodyIn[:i]
-	bodyIn = bodyIn[i+1:]
-	bodyIn = fmt.Sprintf("%s=%s", queryPrefix, url.QueryEscape(bodyIn))
-	return strings.NewReader(bodyIn)
+func unEscaped(bodyIn string) bool {
+	isUnescaped, _ := url.QueryUnescape(bodyIn)
+	if bodyIn == isUnescaped {
+		return true
+	}
+	return false
 }
 
 func uniqueSubjects(in []sparql.Triple) []string {

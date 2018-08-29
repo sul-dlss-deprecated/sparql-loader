@@ -1,0 +1,1 @@
+update=INSERT DATA { <http://example.org/people/1234> <http://purl.example.org/me/EX_0001> <http://example.org/roles/PrincipalInvestigator_&_Agent> . }
