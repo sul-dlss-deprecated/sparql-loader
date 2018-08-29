@@ -31,7 +31,7 @@ func Handler(ctx context.Context, request events.APIGatewayProxyRequest) (string
 
 	log.Printf("REQUST BODY: %s", request.Body)
 
-	if unEscaped(request.Body) {
+	if !correctlyURIEncoded(request.Body) {
 		return fmt.Sprintf("[BadRequest] %s", request.Body), fmt.Errorf("[BadRequest] Unescaped query string detected")
 	}
 
@@ -80,12 +80,13 @@ func main() {
 	lambda.Start(Handler)
 }
 
-func unEscaped(bodyIn string) bool {
-	isUnescaped, _ := url.QueryUnescape(bodyIn)
-	if bodyIn == isUnescaped {
-		return true
+// Returns true if the provided string is correctly URI encoded
+func correctlyURIEncoded(bodyIn string) bool {
+	unescaped, _ := url.QueryUnescape(bodyIn)
+	if bodyIn == unescaped {
+		return false
 	}
-	return false
+	return true
 }
 
 func uniqueSubjects(in []sparql.Triple) []string {
