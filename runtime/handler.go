@@ -7,6 +7,7 @@ import (
 	"strings"
 
 	"github.com/aws/aws-lambda-go/events"
+	honeybadger "github.com/honeybadger-io/honeybadger-go"
 	"github.com/sul-dlss-labs/sparql-loader/sparql"
 )
 
@@ -38,6 +39,7 @@ func (p *ProxyHandler) RequestHandler(ctx context.Context, request events.APIGat
 
 	res, err := p.registry.Writer.Post(request.Body)
 	if err != nil {
+		honeybadger.Notify(err)
 		return nil, err
 	}
 
@@ -51,6 +53,7 @@ func (p *ProxyHandler) RequestHandler(ctx context.Context, request events.APIGat
 		err := p.registry.Publisher.Publish(string(message))
 
 		if err != nil {
+			honeybadger.Notify(err)
 			return nil, err
 		}
 	}
