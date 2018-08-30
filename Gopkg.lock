@@ -31,20 +31,32 @@
   revision = "0b12d6b5"
 
 [[projects]]
+  name = "github.com/matryer/is"
+  packages = ["."]
+  revision = "5f0030ca4decdf2e702be47575d88eabf610593e"
+  version = "v1.1.0"
+
+[[projects]]
   name = "github.com/pmezard/go-difflib"
   packages = ["difflib"]
   revision = "792786c7400a136282c1664665ae0a8db921c6c2"
   version = "v1.0.0"
 
 [[projects]]
+  name = "github.com/stretchr/objx"
+  packages = ["."]
+  revision = "477a77ecc69700c7cdeb1fa9e129548e1c1c393c"
+  version = "v0.1.1"
+
+[[projects]]
   name = "github.com/stretchr/testify"
-  packages = ["assert"]
+  packages = ["assert","mock"]
   revision = "f35b8ab0b5a2cef36673838d662e249dd9c94686"
   version = "v1.2.2"
 
 [solve-meta]
   analyzer-name = "dep"
   analyzer-version = 1
-  inputs-digest = "5ca2f17d93019c3462c642687665b9c86e4e4908e5a645ee5c59214a2e55d2ee"
+  inputs-digest = "d9ae1e7f4cc492f212105749d055e2e26379174a667db6e178444d49287b3d58"
   solver-name = "gps-cdcl"
   solver-version = 1
