@@ -1,7 +1,6 @@
 package sparql
 
 import (
-	"bytes"
 	"io/ioutil"
 	"log"
 	"strings"
@@ -76,7 +75,7 @@ func TestParse(t *testing.T) {
 		if err != nil {
 			log.Fatal(err)
 		}
-		err = query.Parse(bytes.NewReader(content))
+		err = query.Parse(string(content))
 		if err != nil {
 			t.Errorf("ERROR")
 		} else {
