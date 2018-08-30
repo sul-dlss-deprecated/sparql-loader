@@ -29,7 +29,7 @@ func (f *MockSnsWriter) Publish(message string) error {
 	return nil
 }
 
-func TestHandler_Unit(t *testing.T) {
+func TestHandlerUnit(t *testing.T) {
 	is := is.New(t)
 	registry := runtime.NewRegistry(new(MockSparqlWriter), new(MockSnsWriter))
 	handler := runtime.NewHandler(registry)
@@ -39,17 +39,17 @@ func TestHandler_Unit(t *testing.T) {
 		msgCount int
 	}{
 		{
-			file:     "../../fixtures/example1.txt",
+			file:     "../../fixtures/select_triples.txt",
 			out:      200,
 			msgCount: 0, // This test is a SELECT, so no message should be published
 		},
 		{
-			file:     "../../fixtures/example2.txt",
+			file:     "../../fixtures/decoded_query.txt",
 			out:      422,
 			msgCount: 0, // No messages should be published on a bad query
 		},
 		{
-			file:     "../../fixtures/example3.txt",
+			file:     "../../fixtures/insert.txt",
 			out:      200,
 			msgCount: 1, // A message should only be added on a successful INSERT
 		},

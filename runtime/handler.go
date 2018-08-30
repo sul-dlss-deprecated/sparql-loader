@@ -30,10 +30,10 @@ func NewHandler(registry *Registry) *ProxyHandler {
 	return &ProxyHandler{registry: *registry}
 }
 
-// RequestHandler is the functionality that will be called by main
+// RequestHandler is the AWS Lambda proxy handler called by main
 func (p *ProxyHandler) RequestHandler(ctx context.Context, request events.APIGatewayProxyRequest) (*events.APIGatewayProxyResponse, error) {
 	if !correctlyURIEncoded(request.Body) {
-		return &events.APIGatewayProxyResponse{StatusCode: 422, Body: "[BadRequest] query string not properly escaped"}, nil
+		return &events.APIGatewayProxyResponse{StatusCode: 422, Body: "[MalformedRequest] query string not properly escaped"}, nil
 	}
 
 	res, err := p.registry.Writer.Post(request.Body)

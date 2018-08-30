@@ -11,7 +11,7 @@ import (
 	"github.com/sul-dlss-labs/sparql-loader/sparql"
 )
 
-func TestHandler_Integration(t *testing.T) {
+func TestHandlerIntegration(t *testing.T) {
 	if testing.Short() {
 		t.Skip("skipping integration test in short mode")
 	}
@@ -26,19 +26,19 @@ func TestHandler_Integration(t *testing.T) {
 		out  int
 	}{
 		{
-			file: "../fixtures/example1.txt",
+			file: "../fixtures/select_triples.txt",
 			out:  200,
 		},
 		{
-			file: "../fixtures/example2.txt",
+			file: "../fixtures/decoded_query.txt",
 			out:  422,
 		},
 		{
-			file: "../fixtures/example3.txt",
+			file: "../fixtures/insert.txt",
 			out:  200,
 		},
 		{
-			file: "../fixtures/example4.txt",
+			file: "../fixtures/bad_insert.txt",
 			out:  400,
 		},
 	}
