@@ -18,6 +18,14 @@ func (f *MockSparqlWriter) Post(query string) (*events.APIGatewayProxyResponse, 
 	return &events.APIGatewayProxyResponse{StatusCode: 200}, nil
 }
 
+type MockSparqlWriterWithError struct {
+	mock.Mock
+}
+
+func (f *MockSparqlWriterWithError) Post(query string) (*events.APIGatewayProxyResponse, error) {
+	return &events.APIGatewayProxyResponse{StatusCode: 400}, nil
+}
+
 type MockSnsWriter struct {
 	mock.Mock
 }
@@ -63,4 +71,15 @@ func TestHandlerUnit(t *testing.T) {
 		is.Equal(tt.msgCount, len(messages))
 	}
 
+}
+
+func TestHandlerWithBadQuery(t *testing.T) {
+	is := is.New(t)
+	registry := runtime.NewRegistry(new(MockSparqlWriterWithError), new(MockSnsWriter))
+	handler := runtime.NewHandler(registry)
+	content, _ := ioutil.ReadFile("../../fixtures/bad_insert.txt")
+	actual, err := handler.RequestHandler(nil, events.APIGatewayProxyRequest{Body: string(content)})
+	is.NoErr(err)
+	is.Equal(400, actual.StatusCode)
+	is.Equal(1, len(messages))
 }
