@@ -41,6 +41,11 @@ func (p *ProxyHandler) RequestHandler(ctx context.Context, request events.APIGat
 		return nil, err
 	}
 
+	if res.StatusCode == 400 {
+		// log.Printf("There was a problem with the request (%v) %s", resp.StatusCode, respBody)
+		return &events.APIGatewayProxyResponse{StatusCode: 400, Body: "[BadRequest] There was a problem with the request"}, nil
+	}
+
 	message := p.formatMessage(request.Body)
 	if message != nil {
 		err := p.registry.Publisher.Publish(string(message))
