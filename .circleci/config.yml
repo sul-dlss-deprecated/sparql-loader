@@ -27,6 +27,7 @@ jobs:
       - run: go get github.com/golang/dep/cmd/dep
       - run: dep ensure
       - run: go test -v ./... -short
+      - run: go build -o neptune cmd/neptune/main.go
 
   deploy:
     docker:
@@ -41,8 +42,8 @@ jobs:
       - checkout
       - run: go get github.com/golang/dep/cmd/dep
       - run: dep ensure
-      - run: GOOS=linux go build -o main
-      - run: zip lambda.zip main
+      - run: GOOS=linux go build -o neptune cmd/neptune/main.go
+      - run: zip lambda.zip neptune
       - run:
           name: Upload to S3
           command: |
