@@ -11,6 +11,8 @@ import (
 	"github.com/sul-dlss-labs/sparql-loader/sparql"
 )
 
+const urlEncoded = "application/x-www-form-urlencoded"
+
 // Handler is an interface that is called by main to allow handler dependency injection
 type Handler interface {
 	RequestHandler(ctx context.Context, request events.APIGatewayProxyRequest) (*events.APIGatewayProxyResponse, error)
@@ -31,12 +33,18 @@ func NewHandler(registry *Registry) *ProxyHandler {
 	return &ProxyHandler{registry: *registry}
 }
 
-// RequestHandler is the AWS Lambda proxy handler called by main
+func (p *ProxyHandler) isValidContentType(contentType string) bool {
+	return contentType == "application/sparql-update" || contentType == urlEncoded || contentType == "application/sparql-query"
+}
+
+// RequestHandler is the AWS Lambda proxy handler called by main.  It only handles POST requests
 func (p *ProxyHandler) RequestHandler(ctx context.Context, request events.APIGatewayProxyRequest) (*events.APIGatewayProxyResponse, error) {
 	// See https://www.w3.org/TR/sparql11-protocol/#query-via-post-urlencoded
 	contentType := request.Headers["Content-Type"]
-	if contentType == "application/x-www-form-urlencoded" && !correctlyURIEncoded(request.Body) {
+	if contentType == urlEncoded && !correctlyURIEncoded(request.Body) {
 		return &events.APIGatewayProxyResponse{StatusCode: 422, Body: "[MalformedRequest] query string not properly escaped"}, nil
+	} else if !p.isValidContentType(contentType) {
+		return &events.APIGatewayProxyResponse{StatusCode: 422, Body: "[MalformedRequest] Invalid Content-Type"}, nil
 	}
 
 	res, err := p.registry.Writer.Post(request.Body, contentType)
@@ -46,11 +54,10 @@ func (p *ProxyHandler) RequestHandler(ctx context.Context, request events.APIGat
 	}
 
 	if res.StatusCode == 400 {
-		// log.Printf("There was a problem with the request (%v) %s", resp.StatusCode, respBody)
 		return &events.APIGatewayProxyResponse{StatusCode: 400, Body: "[BadRequest] There was a problem with the request"}, nil
 	}
 
-	message := p.formatMessage(request.Body)
+	message := p.formatMessage(request.Body, contentType)
 	if message != nil {
 		err := p.registry.Publisher.Publish(string(message))
 
@@ -62,17 +69,24 @@ func (p *ProxyHandler) RequestHandler(ctx context.Context, request events.APIGat
 	return res, nil
 }
 
-func (p *ProxyHandler) formatMessage(body string) []byte {
-	if strings.HasPrefix(body, "update=") {
-		sparqlQuery := sparql.NewQuery()
+func (p *ProxyHandler) formatMessage(body string, contentType string) []byte {
+	if contentType == "application/sparql-query" || (contentType == urlEncoded && !strings.HasPrefix(body, "update=")) {
+		return nil
+	}
+	sparqlQuery := sparql.NewQuery()
 
-		queryString, _ := url.QueryUnescape(strings.Replace(body, "update=", "", -1))
-		_ = sparqlQuery.Parse(queryString)
+	var queryString string
+	if contentType == urlEncoded {
+		queryString, _ = url.QueryUnescape(strings.Replace(body, "update=", "", -1))
+	} else {
+		queryString = body
+	}
 
-		for _, part := range sparqlQuery.Parts {
-			message, _ := json.Marshal(&snsMessage{Action: "touch", Entities: uniqueSubjects(part.Graph)})
-			return message
-		}
+	_ = sparqlQuery.Parse(queryString)
+
+	for _, part := range sparqlQuery.Parts {
+		message, _ := json.Marshal(&snsMessage{Action: "touch", Entities: uniqueSubjects(part.Graph)})
+		return message
 	}
 	return nil
 }

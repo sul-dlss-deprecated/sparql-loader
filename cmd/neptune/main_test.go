@@ -54,6 +54,12 @@ func TestHandlerUnit(t *testing.T) {
 			msgCount:    0, // This test is a SELECT, so no message should be published
 		},
 		{
+			file:        "../../fixtures/select_triples.txt",
+			contentType: "application/sparql-query",
+			out:         200,
+			msgCount:    0,
+		},
+		{
 			file:        "../../fixtures/decoded_query.txt",
 			contentType: "application/x-www-form-urlencoded",
 			out:         422,
@@ -61,10 +67,11 @@ func TestHandlerUnit(t *testing.T) {
 		},
 		{
 			file:        "../../fixtures/decoded_query.txt",
-			contentType: "application/sparql-query",
+			contentType: "application/sparql-update",
 			out:         200,
 			msgCount:    1,
 		},
+
 		{
 			file:        "../../fixtures/insert.txt",
 			contentType: "application/x-www-form-urlencoded",
@@ -88,7 +95,7 @@ func TestHandlerWithBadQuery(t *testing.T) {
 	registry := runtime.NewRegistry(new(MockSparqlWriterWithError), new(MockSnsWriter))
 	handler := runtime.NewHandler(registry)
 	content, _ := ioutil.ReadFile("../../fixtures/bad_insert.txt")
-	actual, err := handler.RequestHandler(nil, events.APIGatewayProxyRequest{Body: string(content)})
+	actual, err := handler.RequestHandler(nil, events.APIGatewayProxyRequest{Body: string(content), Headers: map[string]string{"Content-Type": "application/x-www-form-urlencoded"}})
 	is.NoErr(err)
 	is.Equal(400, actual.StatusCode)
 	is.Equal(2, len(messages))
