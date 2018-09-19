@@ -22,30 +22,35 @@ func TestHandlerIntegration(t *testing.T) {
 	registry := runtime.NewRegistry(sparqlClient, snsClient)
 	handler := runtime.NewHandler(registry)
 	var testCases = []struct {
-		file string
-		out  int
+		file        string
+		out         int
+		contentType string
 	}{
 		{
-			file: "../fixtures/select_triples.txt",
-			out:  200,
+			file:        "../fixtures/select_triples.txt",
+			contentType: "application/x-www-form-urlencoded",
+			out:         200,
 		},
 		{
-			file: "../fixtures/decoded_query.txt",
-			out:  422,
+			file:        "../fixtures/decoded_query.txt",
+			contentType: "application/x-www-form-urlencoded",
+			out:         422,
 		},
 		{
-			file: "../fixtures/insert.txt",
-			out:  200,
+			file:        "../fixtures/insert.txt",
+			contentType: "application/x-www-form-urlencoded",
+			out:         200,
 		},
 		{
-			file: "../fixtures/bad_insert.txt",
-			out:  400,
+			file:        "../fixtures/bad_insert.txt",
+			contentType: "application/x-www-form-urlencoded",
+			out:         400,
 		},
 	}
 
 	for _, tt := range testCases {
 		content, _ := ioutil.ReadFile(tt.file)
-		actual, err := handler.RequestHandler(nil, events.APIGatewayProxyRequest{Body: string(content)})
+		actual, err := handler.RequestHandler(nil, events.APIGatewayProxyRequest{Body: string(content), Headers: map[string]string{"Content-Type": tt.contentType}})
 		is.NoErr(err)
 		is.Equal(tt.out, actual.StatusCode)
 	}

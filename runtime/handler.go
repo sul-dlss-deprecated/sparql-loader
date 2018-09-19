@@ -33,11 +33,13 @@ func NewHandler(registry *Registry) *ProxyHandler {
 
 // RequestHandler is the AWS Lambda proxy handler called by main
 func (p *ProxyHandler) RequestHandler(ctx context.Context, request events.APIGatewayProxyRequest) (*events.APIGatewayProxyResponse, error) {
-	if !correctlyURIEncoded(request.Body) {
+	// See https://www.w3.org/TR/sparql11-protocol/#query-via-post-urlencoded
+	contentType := request.Headers["Content-Type"]
+	if contentType == "application/x-www-form-urlencoded" && !correctlyURIEncoded(request.Body) {
 		return &events.APIGatewayProxyResponse{StatusCode: 422, Body: "[MalformedRequest] query string not properly escaped"}, nil
 	}
 
-	res, err := p.registry.Writer.Post(request.Body)
+	res, err := p.registry.Writer.Post(request.Body, contentType)
 	if err != nil {
 		honeybadger.Notify(err)
 		return nil, err

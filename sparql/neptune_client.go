@@ -19,8 +19,8 @@ func NewNeptuneClient(endpoint string) *NeptuneClient {
 }
 
 // Post exposes the POST function to the handler
-func (n *NeptuneClient) Post(query string) (*events.APIGatewayProxyResponse, error) {
-	res, err := n.HTTPProxy(query)
+func (n *NeptuneClient) Post(query string, contentType string) (*events.APIGatewayProxyResponse, error) {
+	res, err := n.HTTPProxy(query, contentType)
 	if err != nil {
 		return nil, err
 	}
@@ -28,10 +28,10 @@ func (n *NeptuneClient) Post(query string) (*events.APIGatewayProxyResponse, err
 }
 
 // HTTPProxy passes any query string directly to the NeptuneClient endpoint
-func (n *NeptuneClient) HTTPProxy(query string) (*events.APIGatewayProxyResponse, error) {
+func (n *NeptuneClient) HTTPProxy(query string, contentType string) (*events.APIGatewayProxyResponse, error) {
 
 	proxyReq, _ := http.NewRequest("POST", n.endpoint, strings.NewReader(query))
-	proxyReq.Header.Set("Content-type", "application/x-www-form-urlencoded")
+	proxyReq.Header.Set("Content-Type", contentType)
 
 	httpClient := http.Client{}
 
