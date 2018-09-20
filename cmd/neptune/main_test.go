@@ -71,12 +71,17 @@ func TestHandlerUnit(t *testing.T) {
 			out:         200,
 			msgCount:    1,
 		},
-
 		{
 			file:        "../../fixtures/insert.txt",
 			contentType: "application/x-www-form-urlencoded",
 			out:         200,
 			msgCount:    2, // A message should only be added on a successful INSERT
+		},
+		{
+			file:        "../../fixtures/etl_query.txt",
+			contentType: "application/x-www-form-urlencoded",
+			out:         200,
+			msgCount:    3, // A message should only be added on a successful INSERT
 		},
 	}
 
@@ -98,5 +103,5 @@ func TestHandlerWithBadQuery(t *testing.T) {
 	actual, err := handler.RequestHandler(nil, events.APIGatewayProxyRequest{Body: string(content), Headers: map[string]string{"Content-Type": "application/x-www-form-urlencoded"}})
 	is.NoErr(err)
 	is.Equal(400, actual.StatusCode)
-	is.Equal(2, len(messages))
+	is.Equal(3, len(messages))
 }

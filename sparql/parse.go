@@ -86,10 +86,12 @@ func (query *Query) Parse(src string) error {
 			}
 
 		case 59: // ; - ends a triple line
-			triple := query.NewTriple(string(src[contentStart+1:s.Position.Offset]), currentSubject)
-			triples = append(triples, triple)
-			contentStart = s.Position.Offset
-			currentSubject = triple.Subject
+			if level > 0 {
+				triple := query.NewTriple(string(src[contentStart+1:s.Position.Offset]), currentSubject)
+				triples = append(triples, triple)
+				contentStart = s.Position.Offset
+				currentSubject = triple.Subject
+			}
 
 		case 60: // < - starts a URI
 			uriStart = s.Position.Offset
