@@ -3,8 +3,10 @@ package runtime
 import (
 	"context"
 	"encoding/json"
+	"log"
 	"net/url"
 	"strings"
+	"time"
 
 	"github.com/aws/aws-lambda-go/events"
 	honeybadger "github.com/honeybadger-io/honeybadger-go"
@@ -57,14 +59,22 @@ func (p *ProxyHandler) RequestHandler(ctx context.Context, request events.APIGat
 		return &events.APIGatewayProxyResponse{StatusCode: 400, Body: "[BadRequest] There was a problem with the request"}, nil
 	}
 
+	start := time.Now()
+	log.Printf("SPARQL parse begin: %s", start)
+
 	message := p.formatMessage(request.Body, contentType)
+	log.Printf("SPARQL parse elapsed time: %s", time.Since(start))
+
 	if message != nil {
+		start = time.Now()
+		log.Printf("SNS publish begin: %s", start)
 		err := p.registry.Publisher.Publish(string(message))
 
 		if err != nil {
 			honeybadger.Notify(err)
 			return nil, err
 		}
+		log.Printf("SNS publish elapsed time: %s", time.Since(start))
 	}
 	return res, nil
 }
