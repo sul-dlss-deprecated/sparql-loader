@@ -2,8 +2,10 @@ package sparql
 
 import (
 	"io/ioutil"
+	"log"
 	"net/http"
 	"strings"
+	"time"
 
 	"github.com/aws/aws-lambda-go/events"
 )
@@ -35,11 +37,16 @@ func (n *NeptuneClient) HTTPProxy(query string, contentType string) (*events.API
 
 	httpClient := http.Client{}
 
+	start := time.Now()
+	log.Printf("Neptune begin: %s", start)
+
 	resp, err := httpClient.Do(proxyReq)
 	respBody, _ := ioutil.ReadAll(resp.Body)
 	if err != nil {
 		return nil, err
 	}
+
+	log.Printf("Neptune elapsed time: %s", time.Since(start))
 
 	return &events.APIGatewayProxyResponse{Body: string(respBody), StatusCode: resp.StatusCode}, nil
 }
