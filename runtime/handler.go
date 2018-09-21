@@ -64,6 +64,9 @@ func (p *ProxyHandler) RequestHandler(ctx context.Context, request events.APIGat
 
 	message := p.formatMessage(request.Body, contentType)
 	log.Printf("SPARQL parse elapsed time: %s", time.Since(start))
+	if time.Since(start).Seconds() > 5 { // Log if the elapsed time is > 5 seconds. TODO: Make this configurable
+		log.Printf("SPARQL Query: \n%s", request.Body)
+	}
 
 	if message != nil {
 		start = time.Now()
