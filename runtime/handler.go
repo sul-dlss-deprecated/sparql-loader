@@ -3,6 +3,7 @@ package runtime
 import (
 	"context"
 	"encoding/json"
+	"fmt"
 	"log"
 	"net/url"
 	"strings"
@@ -46,7 +47,8 @@ func (p *ProxyHandler) RequestHandler(ctx context.Context, request events.APIGat
 	if contentType == urlEncoded && !correctlyURIEncoded(request.Body) {
 		return &events.APIGatewayProxyResponse{StatusCode: 422, Body: "[MalformedRequest] query string not properly escaped"}, nil
 	} else if !p.isValidContentType(contentType) {
-		return &events.APIGatewayProxyResponse{StatusCode: 422, Body: "[MalformedRequest] Invalid Content-Type"}, nil
+		body := fmt.Sprintf("[MalformedRequest] Invalid Content-Type: '%s'", contentType)
+		return &events.APIGatewayProxyResponse{StatusCode: 422, Body: body}, nil
 	}
 
 	res, err := p.registry.Writer.Post(request.Body, contentType)
