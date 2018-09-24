@@ -58,7 +58,8 @@ func (p *ProxyHandler) RequestHandler(ctx context.Context, request events.APIGat
 	}
 
 	if res.StatusCode == 400 {
-		return &events.APIGatewayProxyResponse{StatusCode: 400, Body: "[BadRequest] There was a problem with the request"}, nil
+		body := fmt.Sprintf("[BadRequest] There was a problem with the request:\n%s", res.Body)
+		return &events.APIGatewayProxyResponse{StatusCode: 400, Body: body}, nil
 	}
 
 	start := time.Now()
