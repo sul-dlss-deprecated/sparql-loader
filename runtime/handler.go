@@ -100,11 +100,12 @@ func (p *ProxyHandler) formatMessage(body string, contentType string) []byte {
 
 	_ = sparqlQuery.Parse(queryString)
 
+	subjects := []string{}
 	for _, part := range sparqlQuery.Parts {
-		message, _ := json.Marshal(&snsMessage{Action: "touch", Entities: uniqueSubjects(part.Graph)})
-		return message
+		subjects = append(subjects, uniqueSubjects(part.Graph)...) // The ... unpacks the returned []string
 	}
-	return nil
+	message, _ := json.Marshal(&snsMessage{Action: "touch", Entities: removeDuplicates(subjects)})
+	return message
 }
 
 // Returns true if the provided string is correctly URI encoded
@@ -130,4 +131,23 @@ func uniqueSubjects(in []sparql.Triple) []string {
 	}
 
 	return u
+}
+
+func removeDuplicates(elements []string) []string {
+	// Use map to record duplicates as we find them.
+	encountered := map[string]bool{}
+	result := []string{}
+
+	for v := range elements {
+		if encountered[elements[v]] == true {
+			// Do not add duplicate.
+		} else {
+			// Record this element as an encountered element.
+			encountered[elements[v]] = true
+			// Append to result slice.
+			result = append(result, elements[v])
+		}
+	}
+	// Return the new slice.
+	return result
 }
