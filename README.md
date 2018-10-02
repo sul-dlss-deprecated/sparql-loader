@@ -5,7 +5,7 @@
 ## Calling a lambda over http through API Gateway
 
 ```
-curl --http1.1 --data-urlencode update@basic_insert.txt -X 'X-API-Key: <API KEY>' https://d176x3sh52.execute-api.us-west-2.amazonaws.com/development/rialto-sparql-loader
+curl --http1.1 --data-urlencode update@basic_insert.txt -H 'X-API-Key: <API KEY>' https://d176x3sh52.execute-api.us-west-2.amazonaws.com/development/rialto-sparql-loader
 ```
 
 Where `basic_insert.txt` is a text file with a sparql query like:
