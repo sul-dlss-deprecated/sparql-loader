@@ -1,0 +1,30 @@
+WITH <http://sul.stanford.edu/rialto/graphs/stanford_organizations> DELETE {
+<http://sul.stanford.edu/rialto/agents/orgs/vice-provost-for-student-affairs/dean-of-educational-resources/office-of-accessible-education/oae-operations> <http://www.w3.org/2000/01/rdf-schema#label> ?g70099778717780 . }
+WHERE {
+<http://sul.stanford.edu/rialto/agents/orgs/vice-provost-for-student-affairs/dean-of-educational-resources/office-of-accessible-education/oae-operations> <http://www.w3.org/2000/01/rdf-schema#label> ?g70099778717780 . };
+INSERT DATA { GRAPH <http://sul.stanford.edu/rialto/graphs/stanford_organizations> {
+<http://sul.stanford.edu/rialto/agents/orgs/vice-provost-for-student-affairs/dean-of-educational-resources/office-of-accessible-education/oae-operations> <http://www.w3.org/2000/01/rdf-schema#label> "OAE Operations (Office of Accessible Education)" .
+}};
+WITH <http://sul.stanford.edu/rialto/graphs/stanford_organizations> DELETE {
+<http://sul.stanford.edu/rialto/agents/orgs/vice-provost-for-student-affairs/dean-of-educational-resources/office-of-accessible-education/oae-operations> <http://purl.org/dc/terms/identifier> ?g70099778699320 . }
+WHERE {
+<http://sul.stanford.edu/rialto/agents/orgs/vice-provost-for-student-affairs/dean-of-educational-resources/office-of-accessible-education/oae-operations> <http://purl.org/dc/terms/identifier> ?g70099778699320 . };
+INSERT DATA { GRAPH <http://sul.stanford.edu/rialto/graphs/stanford_organizations> {
+<http://sul.stanford.edu/rialto/agents/orgs/vice-provost-for-student-affairs/dean-of-educational-resources/office-of-accessible-education/oae-operations> <http://purl.org/dc/terms/identifier> "HCWA" .
+}};
+WITH <http://sul.stanford.edu/rialto/graphs/stanford_organizations> DELETE {
+<http://sul.stanford.edu/rialto/agents/orgs/vice-provost-for-student-affairs/dean-of-educational-resources/office-of-accessible-education/oae-operations> <http://purl.obolibrary.org/obo/BFO_0000050> ?g70099778668200 . }
+WHERE {
+<http://sul.stanford.edu/rialto/agents/orgs/vice-provost-for-student-affairs/dean-of-educational-resources/office-of-accessible-education/oae-operations> <http://purl.obolibrary.org/obo/BFO_0000050> ?g70099778668200 . };
+INSERT DATA { GRAPH <http://sul.stanford.edu/rialto/graphs/stanford_organizations> {
+<http://sul.stanford.edu/rialto/agents/orgs/vice-provost-for-student-affairs/dean-of-educational-resources/office-of-accessible-education/oae-operations> <http://purl.obolibrary.org/obo/BFO_0000050> <http://sul.stanford.edu/rialto/agents/orgs/vice-provost-for-student-affairs/dean-of-educational-resources/office-of-accessible-education> .
+}};
+WITH <http://sul.stanford.edu/rialto/graphs/stanford_organizations> DELETE {
+<http://sul.stanford.edu/rialto/agents/orgs/vice-provost-for-student-affairs/dean-of-educational-resources/womens-community-center> a ?g70099778635780 . }
+WHERE {
+<http://sul.stanford.edu/rialto/agents/orgs/vice-provost-for-student-affairs/dean-of-educational-resources/womens-community-center> a ?g70099778635780 . };
+INSERT DATA { GRAPH <http://sul.stanford.edu/rialto/graphs/stanford_organizations> {
+<http://sul.stanford.edu/rialto/agents/orgs/vice-provost-for-student-affairs/dean-of-educational-resources/womens-community-center> <http://www.w3.org/1999/02/22-rdf-syntax-ns#type> <http://xmlns.com/foaf/0.1/Agent> .
+<http://sul.stanford.edu/rialto/agents/orgs/vice-provost-for-student-affairs/dean-of-educational-resources/womens-community-center> <http://www.w3.org/1999/02/22-rdf-syntax-ns#type> <http://xmlns.com/foaf/0.1/Organization> .
+<http://sul.stanford.edu/rialto/agents/orgs/vice-provost-for-student-affairs/dean-of-educational-resources/womens-community-center> <http://www.w3.org/1999/02/22-rdf-syntax-ns#type> <http://vivoweb.org/ontology/core#Division> .
+}};

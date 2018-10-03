@@ -98,13 +98,9 @@ func (p *ProxyHandler) formatMessage(body string, contentType string) []byte {
 		queryString = body
 	}
 
-	_ = sparqlQuery.Parse(queryString)
+	subjects, _ := sparqlQuery.ExtractEntities(queryString)
 
-	subjects := []string{}
-	for _, part := range sparqlQuery.Parts {
-		subjects = append(subjects, uniqueSubjects(part.Graph)...) // The ... unpacks the returned []string
-	}
-	message, _ := json.Marshal(&snsMessage{Action: "touch", Entities: removeDuplicates(subjects)})
+	message, _ := json.Marshal(&snsMessage{Action: "touch", Entities: subjects})
 	return message
 }
 
@@ -115,39 +111,4 @@ func correctlyURIEncoded(bodyIn string) bool {
 		return false
 	}
 	return true
-}
-
-func uniqueSubjects(in []sparql.Triple) []string {
-	u := make([]string, 0, len(in))
-	m := make(map[string]bool)
-
-	for _, val := range in {
-		val.Subject = strings.Replace(val.Subject, "<", "", -1)
-		val.Subject = strings.Replace(val.Subject, ">", "", -1)
-		if _, ok := m[val.Subject]; !ok {
-			m[val.Subject] = true
-			u = append(u, val.Subject)
-		}
-	}
-
-	return u
-}
-
-func removeDuplicates(elements []string) []string {
-	// Use map to record duplicates as we find them.
-	encountered := map[string]bool{}
-	result := []string{}
-
-	for v := range elements {
-		if encountered[elements[v]] {
-			// Do not add duplicate.
-			continue
-		}
-		// Record this element as an encountered element.
-		encountered[elements[v]] = true
-		// Append to result slice.
-		result = append(result, elements[v])
-	}
-	// Return the new slice.
-	return result
 }
