@@ -39,12 +39,24 @@ java -server -Xmx4g -jar blazegraph.jar
 go test -v ./...
 ```
 
-or 
+or
 ```shell
 go test -v ./test
 ```
 *To only run the integration test.*
 
+## Server
+As an alternative to running the sparql loader as a lambda, a server is provided.
+
+The server can be invoked with:
+```
+AWS_ACCESS_KEY_ID=999999 AWS_SECRET_ACCESS_KEY=1231 NO_SSL=true \
+RIALTO_TOPIC_ARN=arn:aws:sns:us-east-1:123456789012:data-update \
+AWS_REGION=us-east-1 RIALTO_SNS_ENDPOINT=http://localhost:4575 \
+RIALTO_SPARQL_ENDPOINT=http://localhost:9999/blazegraph/namespace/kb/sparql \
+PORT=8080 HOST=localhost \
+go run cmd/server/main.go
+```
+The server will then be available on http://localhost:8080/sparql
 
 **NOTE:** We do not upload a lambda into localstack or setup API Gateway as it currently does not support the body pass through that we are using.
-

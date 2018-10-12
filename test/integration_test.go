@@ -18,7 +18,7 @@ func TestHandlerIntegration(t *testing.T) {
 
 	is := is.New(t)
 	sparqlClient := sparql.NewNeptuneClient("http://localhost:9999/blazegraph/namespace/kb/sparql")
-	snsClient := message.NewClient("http://localhost:4575", "arn:aws:sns:us-east-1:123456789012:rialto", "localstack")
+	snsClient := message.NewClient("http://localhost:4575", "arn:aws:sns:us-east-1:123456789012:rialto", "localstack", false)
 	registry := runtime.NewRegistry(sparqlClient, snsClient)
 	handler := runtime.NewHandler(registry)
 	var testCases = []struct {

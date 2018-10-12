@@ -41,10 +41,10 @@ func (n *NeptuneClient) HTTPProxy(query string, contentType string) (*events.API
 	log.Printf("Neptune begin: %s", start)
 
 	resp, err := httpClient.Do(proxyReq)
-	respBody, _ := ioutil.ReadAll(resp.Body)
 	if err != nil {
 		return nil, err
 	}
+	respBody, _ := ioutil.ReadAll(resp.Body)
 
 	log.Printf("Neptune elapsed time: %s", time.Since(start))
 
