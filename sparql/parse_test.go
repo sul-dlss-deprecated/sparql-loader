@@ -79,6 +79,11 @@ func TestExtractEntities(t *testing.T) {
 				"http://sul.stanford.edu/rialto/context/addresses/6dd9fa77-bc2f-4cb6-bd93-9e3ef02d7e99_WOS:000347715900024",
 				"http://sul.stanford.edu/rialto/agents/people/6dd9fa77-bc2f-4cb6-bd93-9e3ef02d7e99",
 			},
+		}, {
+			filename: "fixtures/example6.txt",
+			out: []string{
+				"http://sul.stanford.edu/rialto/agents/people/189479",
+			},
 		},
 	}
 

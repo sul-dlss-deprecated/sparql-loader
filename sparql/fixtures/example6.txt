@@ -1,0 +1,6 @@
+WITH <http://sul.stanford.edu/rialto/graphs/stanford_people> DELETE {
+<http://sul.stanford.edu/rialto/agents/people/189479> <http://www.w3.org/2000/01/rdf-schema#label> ?g70331228403740 . }
+WHERE {
+<http://sul.stanford.edu/rialto/agents/people/189479> <http://www.w3.org/2000/01/rdf-schema#label> ?g70331228403740 . };
+INSERT DATA { GRAPH <http://sul.stanford.edu/rialto/graphs/stanford_people> {
+<http://sul.stanford.edu/rialto/agents/people/189479> <http://www.w3.org/2000/01/rdf-schema#label> "Astha ." . }};
