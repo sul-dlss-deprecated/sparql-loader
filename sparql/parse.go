@@ -24,16 +24,17 @@ func (query *Query) ExtractEntities(src string) ([]string, error) {
 				}
 
 				pos = strings.Index(string(tripleBlock[startPos:]), " .") + startPos // We need to add our currert start position as index starts from 0
-				// This check must happen in order to determine if there is literal block
-				// that may match our end-of-statement marker.
-				if strings.Count(string(tripleBlock[startPos:pos]), "\"")%2 != 0 {
-					pos = strings.Index(string(tripleBlock[pos+2]), " .")
-				}
 				for pos > startPos {
-					aTriple := query.NewTriple(tripleBlock[startPos:pos], "")
-					entities = appendEntity(entities, aTriple.Subject)
-					startPos = pos + 2
-					pos = strings.Index(tripleBlock[startPos:], " .") + startPos // We need to add our currert start position as index starts from 0
+					// This check must happen in order to determine if there is literal block
+					// that may match our end-of-statement marker.
+					if strings.Count(string(tripleBlock[startPos:pos]), "\"")%2 != 0 {
+						pos = strings.Index(string(tripleBlock[pos+2]), " .")
+					} else {
+						aTriple := query.NewTriple(tripleBlock[startPos:pos], "")
+						entities = appendEntity(entities, aTriple.Subject)
+						startPos = pos + 2
+						pos = strings.Index(tripleBlock[startPos:], " .") + startPos // We need to add our currert start position as index starts from 0
+					}
 				}
 
 			}
