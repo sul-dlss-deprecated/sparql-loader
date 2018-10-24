@@ -1,0 +1,13 @@
+version: "2"
+services:
+  localstack:
+    image: localstack/localstack:latest
+    ports:
+      - 4567-4583:4567-4583
+    environment:
+      SERVICES: sns
+      DEBUG: 1
+  triplestore:
+    image: lyrasis/blazegraph:2.1.4
+    ports:
+      - "8080:8080"
