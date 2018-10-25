@@ -22,17 +22,30 @@ def main(event, context):
     response = neptune_client.post(event)
 
     if response['statusCode'] == 200:
-        sns_response = sns_client.publish(formatMessage(event['body']))
+        entities = getUniqueSubjects(getEntities(event['body']))
+        message = "{'Action': 'touch', 'Entities': %s}" % entities
+        sns_response = sns_client.publish(message)
 
     return {
         'message' : response['body'],
         'statusCode' : response['statusCode']
 	}
 
-def formatMessage(body):
+def getEntities(body):
+    delimeter_count = body.count("}};") # determine if the sparql query is broken up by "}};"
+    if delimeter_count in [0, 1]:
+        return parseBody(body)
+
     subjects = []
-    graph = translateUpdate(parseUpdate(body))
-    for block in graph:
+    for chunk in body.split("}};"):
+        if len(chunk.rstrip()) > 0:
+            subjects += parseBody(chunk+"}};") # append the "}};" that was removed by split
+
+    return subjects
+
+def parseBody(body):
+    subjects = []
+    for block in translateUpdate(parseUpdate(body)):
         for key in block.keys():
             if key in ['delete', 'insert']:
                 subjects += getSubjectsFromQuads(block[key]['quads'])
@@ -41,8 +54,8 @@ def formatMessage(body):
                 subjects += getSubjectsFromQuads(block['quads'])
             if key in ['triples']:
                 subjects += getSubjectsFromTriples(block['triples'])
-
-    return "{'Action': 'touch', 'Entities': %s}" % getUniqueSubjects(subjects)
+    
+    return subjects
 
 def getSubjectsFromQuads(block):
     subjects = []
