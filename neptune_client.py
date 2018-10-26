@@ -7,6 +7,6 @@ class NeptuneClient():
 
     def post(self,event):
         http_conn = http.client.HTTPConnection(self.sparql_endpoint)
-        http_conn.request('POST', self.sparql_path, body=event['body'], headers={"Content-Type": event['content_type']})
+        http_conn.request('POST', self.sparql_path, body=event['body'], headers={"Content-Type": "application/x-www-form-urlencoded"})
         response = http_conn.getresponse()
         return {'body': response.read(), 'statusCode': response.status}

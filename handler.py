@@ -1,5 +1,8 @@
 
 import os
+import logging
+import json
+import urllib.parse
 
 from rdflib.plugins.sparql.parser import parseUpdate
 from rdflib.plugins.sparql.algebra import translateUpdate
@@ -8,6 +11,9 @@ from sns_client import SnsClient
 from neptune_client import NeptuneClient
 
 def main(event, context):
+    logger = logging.getLogger()
+    logger.setLevel(logging.INFO)
+    logger.info("EVENT = "+json.dumps(event))
     rialto_sparql_endpoint = os.getenv('RIALTO_SPARQL_ENDPOINT', "localhost:8080")
     rialto_sparql_path = os.getenv('RIALTO_SPARQL_PATH', "/bigdata/namespace/kb/sparql")
     rialto_sns_endpoint = os.getenv('RIALTO_SNS_ENDPOINT', "http://localhost:4575")
@@ -18,14 +24,16 @@ def main(event, context):
     neptune_client = NeptuneClient(rialto_sparql_endpoint, rialto_sparql_path)
 
     response = neptune_client.post(event)
+    logger.info("NEPTUNE_RESPONSE = "+str(response))
 
     if response['statusCode'] == 200:
-        entities = getUniqueSubjects(getEntities(event['body']))
+        entities = getUniqueSubjects(getEntities(urllib.parse.unquote_plus(event['body']).replace('update=','')))
         message = "{'Action': 'touch', 'Entities': %s}" % entities
         sns_response = sns_client.publish(message)
+        logger.info("SNS_RESPONSE = "+json.dumps(sns_response))
 
     return {
-        'message' : response['body'],
+        'body' : str(response['body']),
         'statusCode' : response['statusCode']
 	}
 

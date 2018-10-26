@@ -5,3 +5,5 @@ vendor/*
 __pycache__
 env/*
 *.pyc
+_pytest/*
+bin/
