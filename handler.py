@@ -1,15 +1,13 @@
 
 import os
-import rdflib
+
 from rdflib.plugins.sparql.parser import parseUpdate
-from rdflib.plugins.sparql.update import evalUpdate
-from rdflib.plugins.sparql.algebra import translateQuery, translateUpdate
+from rdflib.plugins.sparql.algebra import translateUpdate
 
 from sns_client import SnsClient
 from neptune_client import NeptuneClient
 
 def main(event, context):
-    # honeybadger_api_key = os.getenv('HONEYBADGER_API_KEY', "12345")
     rialto_sparql_endpoint = os.getenv('RIALTO_SPARQL_ENDPOINT', "localhost:8080")
     rialto_sparql_path = os.getenv('RIALTO_SPARQL_PATH', "/bigdata/namespace/kb/sparql")
     rialto_sns_endpoint = os.getenv('RIALTO_SNS_ENDPOINT', "http://localhost:4575")
