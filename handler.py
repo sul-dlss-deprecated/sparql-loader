@@ -3,6 +3,7 @@ import os
 import logging
 import json
 import urllib.parse
+import time
 
 from rdflib.plugins.sparql.parser import parseUpdate
 from rdflib.plugins.sparql.algebra import translateUpdate
@@ -24,12 +25,23 @@ def main(event, context):
     sns_client = SnsClient(rialto_sns_endpoint, rialto_topic_arn, aws_region)
     neptune_client = NeptuneClient(rialto_sparql_endpoint, rialto_sparql_path)
 
+    start_time = time.time()
+    logger.info("NEPTUNE START: " + time.asctime( time.localtime(start_time)))
     response = neptune_client.post(event)
+    logger.info("NEPTUNE ELAPSED: %f" % (time.time() - start_time))
 
     if response['statusCode'] == 200:
+        start_time = time.time()
+        logger.info("SPARQL PARSE START: " + time.asctime( time.localtime(start_time)))
         entities = getUniqueSubjects(getEntities(urllib.parse.unquote_plus(event['body']).replace('update=','')))
+        logger.info("SPARQL PARSE ELAPSED: %f" % (time.time() - start_time))
+
         message = "{'Action': 'touch', 'Entities': %s}" % entities
+
+        start_time = time.time()
+        logger.info("SNS START: " + time.asctime( time.localtime(start_time)))
         sns_response = sns_client.publish(message)
+        logger.info("SNS ELAPSED: %f" % (time.time() - start_time))
 
     return {
         'body' : str(response['body']),
