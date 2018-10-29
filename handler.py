@@ -11,7 +11,7 @@ from sns_client import SnsClient
 from neptune_client import NeptuneClient
 
 
-def main(event, context):
+def main(event, _):
     # Setup the logger at the INFO level while we continue to profile
     logger = logging.getLogger()
     logger.setLevel(logging.INFO)
@@ -25,16 +25,19 @@ def main(event, context):
     sns_client = SnsClient(rialto_sns_endpoint, rialto_topic_arn, aws_region)
     neptune_client = NeptuneClient(rialto_sparql_endpoint, rialto_sparql_path)
 
-    response = neptune_client.post(event)
+    response, status_code = neptune_client.post(event['body'])
 
-    if response['statusCode'] == 200:
-        entities = get_unique_subjects(get_entities(urllib.parse.unquote_plus(event['body']).replace('update=', '')))
+    if "update=" in event['body'] and status_code == 200:
+        entities = get_unique_subjects(
+                        get_entities(
+                            urllib.parse.unquote_plus(
+                                event['body']).replace('update=', '')))
         message = "{'Action': 'touch', 'Entities': %s}" % entities
         sns_response = sns_client.publish(message)
 
     return {
-        'body': str(response['body']),
-        'statusCode': response['statusCode']
+        'body': str(response),
+        'statusCode': status_code
     }
 
 
