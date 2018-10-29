@@ -9,6 +9,9 @@ from rdflib.plugins.sparql.algebra import translateUpdate
 from sns_client import SnsClient
 from neptune_client import NeptuneClient
 
+# Set a constant for the statement delimiter used for parsing
+STATEMENT_DELIMITER = "}};"
+
 
 def main(event, _):
     rialto_sparql_endpoint = os.getenv('RIALTO_SPARQL_ENDPOINT', "http://localhost:8080/bigdata/namespace/kb/sparql")
@@ -38,14 +41,14 @@ def main(event, _):
 
 
 def get_entities(body):
-    delimeter_count = body.count("}};")  # determine if the sparql query is broken up by "}};"
-    if delimeter_count in [0, 1]:
+    delimiter_count = body.count(STATEMENT_DELIMITER)  # determine if the sparql query is broken up by "}};"
+    if delimiter_count in [0, 1]:
         return parse_body(body)
 
     subjects = []
-    for chunk in body.split("}};"):
+    for chunk in body.split(STATEMENT_DELIMITER):
         if len(chunk.rstrip()) > 0:
-            subjects += parse_body(chunk+"}};")  # append the "}};" that was removed by split
+            subjects += parse_body(chunk+STATEMENT_DELIMITER)  # append the "}};" that was removed by split
 
     return subjects
 
@@ -83,9 +86,5 @@ def get_subjects_from_triples(block):
 
 
 def get_unique_subjects(subjectsList):
-    unique_subjects = []
-    for subject in subjectsList:
-        if subject not in unique_subjects:
-            unique_subjects.append(subject)
-
-    return unique_subjects
+    # return a sorted list of unique subjects. Not sure if this is idiomatic however
+    return list(set(subjectsList))
