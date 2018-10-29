@@ -10,6 +10,7 @@ from rdflib.plugins.sparql.algebra import translateUpdate
 from sns_client import SnsClient
 from neptune_client import NeptuneClient
 
+
 def main(event, context):
     # Setup the logger at the INFO level while we continue to profile
     logger = logging.getLogger()
@@ -27,60 +28,65 @@ def main(event, context):
     response = neptune_client.post(event)
 
     if response['statusCode'] == 200:
-        entities = getUniqueSubjects(getEntities(urllib.parse.unquote_plus(event['body']).replace('update=','')))
+        entities = get_unique_subjects(get_entities(urllib.parse.unquote_plus(event['body']).replace('update=', '')))
         message = "{'Action': 'touch', 'Entities': %s}" % entities
         sns_response = sns_client.publish(message)
 
     return {
-        'body' : str(response['body']),
-        'statusCode' : response['statusCode']
-	}
+        'body': str(response['body']),
+        'statusCode': response['statusCode']
+    }
 
-def getEntities(body):
-    delimeter_count = body.count("}};") # determine if the sparql query is broken up by "}};"
+
+def get_entities(body):
+    delimeter_count = body.count("}};")  # determine if the sparql query is broken up by "}};"
     if delimeter_count in [0, 1]:
-        return parseBody(body)
+        return parse_body(body)
 
     subjects = []
     for chunk in body.split("}};"):
         if len(chunk.rstrip()) > 0:
-            subjects += parseBody(chunk+"}};") # append the "}};" that was removed by split
+            subjects += parse_body(chunk+"}};")  # append the "}};" that was removed by split
 
     return subjects
 
-def parseBody(body):
+
+def parse_body(body):
     subjects = []
     for block in translateUpdate(parseUpdate(body)):
         for key in block.keys():
             if key in ['delete', 'insert']:
-                subjects += getSubjectsFromQuads(block[key]['quads'])
-                subjects += getSubjectsFromTriples(block[key]['triples'])
+                subjects += get_subjects_from_quads(block[key]['quads'])
+                subjects += get_subjects_from_triples(block[key]['triples'])
             if key in ['quads']:
-                subjects += getSubjectsFromQuads(block['quads'])
+                subjects += get_subjects_from_quads(block['quads'])
             if key in ['triples']:
-                subjects += getSubjectsFromTriples(block['triples'])
-    
+                subjects += get_subjects_from_triples(block['triples'])
+
     return subjects
 
-def getSubjectsFromQuads(block):
+
+def get_subjects_from_quads(block):
     subjects = []
     for key in block.keys():
         for s, _p, _o in block[key]:
             subjects.append(s.toPython())
-    
+
     return subjects
 
-def getSubjectsFromTriples(block):
+
+def get_subjects_from_triples(block):
     subjects = []
     for s, _p, _o in block:
         subjects.append(s.toPython())
 
     return subjects
 
-def getUniqueSubjects(subjectsList):
+
+def get_unique_subjects(subjectsList):
     unique_subjects = []
     for subject in subjectsList:
         if subject not in unique_subjects:
             unique_subjects.append(subject)
-    
+
     return unique_subjects
