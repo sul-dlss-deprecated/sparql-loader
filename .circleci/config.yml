@@ -15,12 +15,7 @@ jobs:
       - run:
           command: |
             sudo pip install --upgrade pip
-            # pip3 install -r requirements.txt
             python -m venv env
             source env/bin/activate # load our virtual env
-            pip install rdflib
-            pip install boto3
-            pip install rdflib-sparql
-            pip install honeybadger
-            pip install pytest
+            pip3 install -r requirements.txt
             pytest -k unit # only run unit tests at this stage
