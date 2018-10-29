@@ -18,7 +18,18 @@ PREFIX dc: <http://purl.org/dc/elements/1.1/> INSERT DATA { <http://example/book
 
 ### Install dependencies
 
+1. Create a [python virtual environment](https://docs.python-guide.org/dev/virtualenvs/#lower-level-virtualenv)
+1. Activate your virtual environment
+
 ```shell
+source env/bin/activate
+```
+
+1. Install dependencies
+
+```shell
+pip install -r requirements.txt
+```
 
 ### Unit testing
 
@@ -33,7 +44,7 @@ pytest -vv -k unit
 docker-compose up
 ```
 
-3. Run the test
+2. Run the test
 ```shell
 pytest -vv
 ```
@@ -43,25 +54,25 @@ pytest -vv
 Per the [AWS Documentation](https://docs.aws.amazon.com/lambda/latest/dg/lambda-python-how-to-create-deployment-package.html), a deployment package is made from the `virtualenv` installed dependencies.
 
 1. Create a [python virtual environment](https://docs.python-guide.org/dev/virtualenvs/#lower-level-virtualenv)
-1. Activate your virtual environment
+2. Activate your virtual environment
 
 ```shell
 source env/bin/activate
 ```
 
-1. Install dependencies
+3. Install dependencies
 
 ```shell
 pip install -r requirements.txt
 ```
 
-1. Create zip file
+4. Create zip file
 
 ```shell
 zip sparql-loader.zip handler.py sns_client.py neptune_client.py
 ```
 
-1. Copy dependencies into zip file
+5. Copy dependencies into zip file
 
 ```shell
 cd env/lib/python3.6/site-packages/
