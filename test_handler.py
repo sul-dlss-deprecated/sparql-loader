@@ -39,7 +39,7 @@ def test_main_int():
             data = myfile.read()
 
     assert handler.main(
-        {'body': data, 'content_type': 'application/sparql-update'},
+        {'body': data, 'Content-Type': 'application/sparql-update'},
         "blank_context")['statusCode'] == 200
 
 

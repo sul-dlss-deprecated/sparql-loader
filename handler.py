@@ -1,5 +1,6 @@
 
 import os
+import json
 import urllib.parse
 
 from rdflib.plugins.sparql.parser import parseUpdate
@@ -20,14 +21,15 @@ def main(event, _):
 
     response, status_code = neptune_client.post(event['body'])
 
-    if "update=" in event['body'] and status_code == 200:
-        entities = get_unique_subjects(
-                        get_entities(
-                            urllib.parse.unquote_plus(
-                                event['body']).replace('update=', '')))
-        if entities:
-            message = {"Action": "touch", "Entities": entities}
-            _ = sns_client.publish(message)  # currently not using the neptune response
+    if status_code == 200:
+        if "update=" in event['body'] or event['Content-Type'] in ["application/sparql-update"]:
+            entities = get_unique_subjects(
+                            get_entities(
+                                urllib.parse.unquote_plus(
+                                    event['body']).replace('update=', '')))
+            if entities:
+                message = {"Action": "touch", "Entities": entities}
+                _ = sns_client.publish(json.dumps(message))  # currently not using the neptune response
 
     return {
         'body': str(response),
