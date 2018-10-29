@@ -9,4 +9,4 @@ class NeptuneClient():
         response = requests.post(self.sparql_endpoint,
                                  data=request_body,
                                  headers={"Content-Type": "application/sparql-update"})
-        return (response.text, response.status_code)
+        return response.text, response.status_code

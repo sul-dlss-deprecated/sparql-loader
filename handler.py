@@ -1,7 +1,5 @@
 
 import os
-import logging
-import json
 import urllib.parse
 
 from rdflib.plugins.sparql.parser import parseUpdate
@@ -12,10 +10,6 @@ from neptune_client import NeptuneClient
 
 
 def main(event, _):
-    # Setup the logger at the INFO level while we continue to profile
-    logger = logging.getLogger()
-    logger.setLevel(logging.INFO)
-
     rialto_sparql_endpoint = os.getenv('RIALTO_SPARQL_ENDPOINT', "http://localhost:8080/bigdata/namespace/kb/sparql")
     rialto_sns_endpoint = os.getenv('RIALTO_SNS_ENDPOINT', "http://localhost:4575")
     rialto_topic_arn = os.getenv('RIALTO_TOPIC_ARN', "rialto")
@@ -31,8 +25,9 @@ def main(event, _):
                         get_entities(
                             urllib.parse.unquote_plus(
                                 event['body']).replace('update=', '')))
-        message = "{'Action': 'touch', 'Entities': %s}" % entities
-        sns_response = sns_client.publish(message)
+        if entities:
+            message = {"Action": "touch", "Entities": entities}
+            _ = sns_client.publish(message)  # currently not using the neptune response
 
     return {
         'body': str(response),
