@@ -1,6 +1,8 @@
 
-import os
 import json
+import logging
+import os
+import time
 import urllib.parse
 
 from rdflib.plugins.sparql.parser import parseUpdate
@@ -14,6 +16,10 @@ STATEMENT_DELIMITER = "}};"
 
 
 def main(event, _):
+    # Setup the logger at the INFO level while we continue to profile
+    logger = logging.getLogger()
+    logger.setLevel(logging.INFO)
+
     rialto_sparql_endpoint = os.getenv('RIALTO_SPARQL_ENDPOINT', "http://localhost:8080/bigdata/namespace/kb/sparql")
     rialto_sns_endpoint = os.getenv('RIALTO_SNS_ENDPOINT', "http://localhost:4575")
     rialto_topic_arn = os.getenv('RIALTO_TOPIC_ARN', "rialto")
@@ -22,14 +28,21 @@ def main(event, _):
     sns_client = SnsClient(rialto_sns_endpoint, rialto_topic_arn, aws_region)
     neptune_client = NeptuneClient(rialto_sparql_endpoint)
 
+    start_time = time.time()
+    logger.info("NEPTUNE START: " + time.asctime(time.localtime(start_time)))
     response, status_code = neptune_client.post(event['body'])
+    logger.info("NEPTUNE ELAPSED: %f" % (time.time() - start_time))
 
     if status_code == 200:
         if "update=" in event['body'] or event['Content-Type'] == "application/sparql-update":
+            start_time = time.time()
+            logger.info("SPARQL PARSE START: " + time.asctime(time.localtime(start_time)))
             entities = get_unique_subjects(
                             get_entities(
                                 urllib.parse.unquote_plus(
                                     event['body']).replace('update=', '')))
+            logger.info("SPARQL PARSE ELAPSED: %f" % (time.time() - start_time))
+
             if entities:
                 message = {"Action": "touch", "Entities": entities}
                 _ = sns_client.publish(json.dumps(message))  # currently not using the neptune response
