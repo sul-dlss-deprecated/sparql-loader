@@ -83,19 +83,23 @@ test_cases = [
     }
 ]
 
+
 def test_main_int():
     for test_case in test_cases:
         with open('fixtures/'+test_case['file'], 'r') as myfile:
-            data=myfile.read()
+            data = myfile.read()
 
-    assert handler.main({'body': data, 'content_type': 'application/sparql-update'}, "blank_context")['statusCode'] == 200
+    assert handler.main(
+        {'body': data, 'content_type': 'application/sparql-update'},
+        "blank_context")['statusCode'] == 200
 
-def test_getEntities_unit():    
+
+def test_get_entities_unit():
     for test_case in test_cases:
         with open('fixtures/'+test_case['file'], 'r') as myfile:
-            data=myfile.read()
+            data = myfile.read()
 
-        entities = handler.getEntities(data)
+        entities = handler.get_entities(data)
 
         for entity in test_case['out']:
             assert entity in entities
