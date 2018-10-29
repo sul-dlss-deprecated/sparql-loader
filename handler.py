@@ -22,7 +22,7 @@ def main(event, _):
     response, status_code = neptune_client.post(event['body'])
 
     if status_code == 200:
-        if "update=" in event['body'] or event['Content-Type'] in ["application/sparql-update"]:
+        if "update=" in event['body'] or event['Content-Type'] == "application/sparql-update":
             entities = get_unique_subjects(
                             get_entities(
                                 urllib.parse.unquote_plus(
