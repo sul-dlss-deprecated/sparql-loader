@@ -16,14 +16,13 @@ def main(event, _):
     logger = logging.getLogger()
     logger.setLevel(logging.INFO)
 
-    rialto_sparql_endpoint = os.getenv('RIALTO_SPARQL_ENDPOINT', "localhost:8080")
-    rialto_sparql_path = os.getenv('RIALTO_SPARQL_PATH', "/bigdata/namespace/kb/sparql")
+    rialto_sparql_endpoint = os.getenv('RIALTO_SPARQL_ENDPOINT', "http://localhost:8080/bigdata/namespace/kb/sparql")
     rialto_sns_endpoint = os.getenv('RIALTO_SNS_ENDPOINT', "http://localhost:4575")
     rialto_topic_arn = os.getenv('RIALTO_TOPIC_ARN', "rialto")
     aws_region = os.getenv('AWS_REGION', "us-west-2")
 
     sns_client = SnsClient(rialto_sns_endpoint, rialto_topic_arn, aws_region)
-    neptune_client = NeptuneClient(rialto_sparql_endpoint, rialto_sparql_path)
+    neptune_client = NeptuneClient(rialto_sparql_endpoint)
 
     response, status_code = neptune_client.post(event['body'])
 
