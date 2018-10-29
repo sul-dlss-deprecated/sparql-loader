@@ -2,3 +2,8 @@ neptune
 lambda.zip
 result.log
 vendor/*
+__pycache__
+env/*
+*.pyc
+_pytest/*
+bin/

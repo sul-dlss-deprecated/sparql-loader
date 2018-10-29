@@ -1,0 +1,6 @@
+INSERT DATA { GRAPH <http://sul.stanford.edu/rialto/graphs/wos> {
+<http://sul.stanford.edu/rialto/agents/orgs/b87e0d339b9997a81c7078fc3c227133> <http://www.w3.org/2004/02/skos/core#prefLabel> "Stanford Global Studies Program's \"Urban Beyond Measure\" project" .
+}};
+INSERT DATA { GRAPH <http://sul.stanford.edu/rialto/graphs/wos> {
+<http://sul.stanford.edu/rialto/agents/orgs/b87e0d339b9997a81c7078fc3c227133> <http://www.w3.org/2000/01/rdf-schema#label> "Stanford Global Studies Program's \"Urban Beyond Measure\" project" .
+}};

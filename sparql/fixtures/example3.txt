@@ -1,7 +1,0 @@
-PREFIX dc: <http://purl.org/dc/elements/1.1/>
-PREFIX ex: <http://example.edu/instances/>
-INSERT DATA
-{ <http://example/book3> dc:title    "New title" ;
-                         dc:creator  "Collier, Aaron" ;
-						 dc:source   ex:1 .
-}
