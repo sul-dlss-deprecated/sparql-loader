@@ -1,0 +1,17 @@
+FROM python:3
+
+COPY requirements.txt /opt/sparql-loader/
+WORKDIR /opt/sparql-loader
+
+RUN pip install -r requirements.txt
+COPY *.py /opt/sparql-loader/
+
+EXPOSE 8080
+
+ENV AWS_REGION=us-east-1
+ENV RIALTO_TOPIC_ARN=arn:aws:sns:us-east-1:123456789012:data-update
+ENV AWS_ACCESS_KEY_ID=foobar
+ENV AWS_SECRET_ACCESS_KEY=foobar
+# Requires RIALTO_SPARQL_ENDPOINT and RIALTO_SNS_ENDPOINT
+
+CMD ["python", "dev_server.py"]
