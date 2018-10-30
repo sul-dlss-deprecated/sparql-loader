@@ -15,36 +15,69 @@ PREFIX dc: <http://purl.org/dc/elements/1.1/> INSERT DATA { <http://example/book
 
 ## Testing
 
+
+### Install dependencies
+
+1. Create a [python virtual environment](https://docs.python-guide.org/dev/virtualenvs/#lower-level-virtualenv)
+1. Activate your virtual environment
+
+```shell
+source env/bin/activate
+```
+
+1. Install dependencies
+
+```shell
+pip install -r requirements.txt
+```
+
 ### Unit testing
 
 ```shell
-go test -v ./... -short
+pytest -vv -k unit
 ```
 
 ### Integration testing
 
-1. Start localstack.
+1. Start localstack and blazegraph via docker.
 ```
-SERVICES=sns localstack start
-```
-
-2. Start Blazegraph
-```
-export JAVA_HOME="$(/usr/libexec/java_home -v 1.8)"
-java -server -Xmx4g -jar blazegraph.jar
+docker-compose up
 ```
 
-3. Run the test
+2. Run the test
 ```shell
-go test -v ./...
+pytest -vv
 ```
 
-or 
+### Building an AWS Lambda deployment package
+
+Per the [AWS Documentation](https://docs.aws.amazon.com/lambda/latest/dg/lambda-python-how-to-create-deployment-package.html), a deployment package is made from the `virtualenv` installed dependencies.
+
+1. Create a [python virtual environment](https://docs.python-guide.org/dev/virtualenvs/#lower-level-virtualenv)
+2. Activate your virtual environment
+
 ```shell
-go test -v ./test
+source env/bin/activate
 ```
-*To only run the integration test.*
 
+3. Install dependencies
 
-**NOTE:** We do not upload a lambda into localstack or setup API Gateway as it currently does not support the body pass through that we are using.
+```shell
+pip install -r requirements.txt
+```
+
+4. Create zip file
+
+```shell
+zip sparql-loader.zip handler.py sns_client.py neptune_client.py
+```
+
+5. Copy dependencies into zip file
+
+```shell
+cd env/lib/python3.6/site-packages/
+zip -r ../../../../sparql-loader.zip honeybadger isodate psutil rdflib rdflib_sparql requests
+```
+
+Note: We are packaging the minimum level of dependencies to try to keep our deployment package small.
 
