@@ -25,16 +25,18 @@ def main(event, _):
     rialto_topic_arn = os.getenv('RIALTO_TOPIC_ARN', "rialto")
     aws_region = os.getenv('AWS_REGION', "us-west-2")
 
+    request_content_type = event['headers']['Content-Type']  # capture this value for use throughout
+
     sns_client = SnsClient(rialto_sns_endpoint, rialto_topic_arn, aws_region)
     neptune_client = NeptuneClient(rialto_sparql_endpoint)
 
     start_time = time.time()
     logger.info("NEPTUNE START: " + time.asctime(time.localtime(start_time)))
-    response, status_code = neptune_client.post(event['body'])
+    response, status_code = neptune_client.post(event['body'], request_content_type)
     logger.info("NEPTUNE ELAPSED: %f" % (time.time() - start_time))
 
     if status_code == 200:
-        if "update=" in event['body'] or event['Content-Type'] == "application/sparql-update":
+        if "update=" in event['body'] or request_content_type == "application/sparql-update":
             start_time = time.time()
             logger.info("SPARQL PARSE START: " + time.asctime(time.localtime(start_time)))
             entities = get_unique_subjects(
