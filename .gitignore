@@ -8,3 +8,4 @@ env/*
 _pytest/*
 bin/
 .idea/
+.DS_Store

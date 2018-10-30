@@ -13,6 +13,13 @@ from neptune_client import NeptuneClient
 
 # Set a constant for the statement delimiter used for parsing
 STATEMENT_DELIMITER = "}};"
+URL_ENCODED = "application/x-www-form-urlencoded"
+SPARQL_UPDATE = "application/sparql-update"
+VALID_CONTENT_TYPES = [
+    "application/sparql-query",
+    SPARQL_UPDATE,
+    URL_ENCODED
+]
 
 
 def main(event, _):
@@ -25,24 +32,31 @@ def main(event, _):
     rialto_topic_arn = os.getenv('RIALTO_TOPIC_ARN', "rialto")
     aws_region = os.getenv('AWS_REGION', "us-west-2")
 
-    request_content_type = event['headers']['Content-Type']  # capture this value for use throughout
+    request_body = event['body']
+    request_content_type = event['headers']['Content-Type']
+
+    # Verify that the body is properly encoded and has a supported content type
+    # BEFORE setting up AWS resources
+    verify_query = is_malformed_query(request_body, request_content_type)
+    if verify_query is not None:
+        return verify_query
 
     sns_client = SnsClient(rialto_sns_endpoint, rialto_topic_arn, aws_region)
     neptune_client = NeptuneClient(rialto_sparql_endpoint)
 
     start_time = time.time()
     logger.info("NEPTUNE START: " + time.asctime(time.localtime(start_time)))
-    response, status_code = neptune_client.post(event['body'], request_content_type)
+    response, status_code = neptune_client.post(request_body, request_content_type)
     logger.info("NEPTUNE ELAPSED: %f" % (time.time() - start_time))
 
     if status_code == 200:
-        if "update=" in event['body'] or request_content_type == "application/sparql-update":
+        if "update=" in request_body or request_content_type == SPARQL_UPDATE:
             start_time = time.time()
             logger.info("SPARQL PARSE START: " + time.asctime(time.localtime(start_time)))
             entities = get_unique_subjects(
                             get_entities(
                                 urllib.parse.unquote_plus(
-                                    event['body']).replace('update=', '')))
+                                    request_body).replace('update=', '')))
             logger.info("SPARQL PARSE ELAPSED: %f" % (time.time() - start_time))
 
             if entities:
@@ -103,3 +117,25 @@ def get_subjects_from_triples(block):
 def get_unique_subjects(subjectsList):
     # return a sorted list of unique subjects. Not sure if this is idiomatic however
     return list(set(subjectsList))
+
+
+# returns None on happy path, otherwise returns error structure to be passed through
+def is_malformed_query(body, content_type):
+    if content_type == URL_ENCODED:
+        if not correctly_uri_encoded(body):
+            return {'body': "[MalformedRequest] query string not properly escaped",
+                    'statusCode': 422}
+    elif content_type not in VALID_CONTENT_TYPES:
+        return {'body': "[MalformedRequest] Invalid Content-Type: '%s'" % content_type,
+                'statusCode': 422}
+
+    return None
+
+
+# Returns true if the provided string is correctly URI encoded
+def correctly_uri_encoded(body):
+    unescaped = urllib.parse.unquote_plus(body)
+    if body == unescaped:
+        return False
+
+    return True
