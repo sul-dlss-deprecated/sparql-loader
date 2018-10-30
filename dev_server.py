@@ -9,6 +9,7 @@ log = logging.getLogger(__name__)
 # This is necessary because localstack does not support API gateway to lambda
 # that uses a post body.
 
+
 class SparqlLoaderRequestHandler(BaseHTTPRequestHandler):
     def do_POST(self):
         log.info("Handling post")
