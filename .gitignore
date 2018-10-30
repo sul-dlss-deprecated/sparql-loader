@@ -7,3 +7,4 @@ env/*
 *.pyc
 _pytest/*
 bin/
+.idea/
