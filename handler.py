@@ -21,12 +21,12 @@ VALID_CONTENT_TYPES = [
     URL_ENCODED
 ]
 
+# Setup the logger at the INFO level while we continue to profile
+logger = logging.getLogger()
+logger.setLevel(logging.INFO)
+
 
 def main(event, _):
-    # Setup the logger at the INFO level while we continue to profile
-    logger = logging.getLogger()
-    logger.setLevel(logging.INFO)
-
     rialto_sparql_endpoint = os.getenv('RIALTO_SPARQL_ENDPOINT', "http://localhost:8080/bigdata/namespace/kb/sparql")
     rialto_sns_endpoint = os.getenv('RIALTO_SNS_ENDPOINT', "http://localhost:4575")
     rialto_topic_arn = os.getenv('RIALTO_TOPIC_ARN', "rialto")
@@ -84,15 +84,18 @@ def get_entities(body):
 
 def parse_body(body):
     subjects = []
-    for block in translateUpdate(parseUpdate(body)):
-        for key in block.keys():
-            if key in ['delete', 'insert']:
-                subjects += get_subjects_from_quads(block[key]['quads'])
-                subjects += get_subjects_from_triples(block[key]['triples'])
-            if key in ['quads']:
-                subjects += get_subjects_from_quads(block['quads'])
-            if key in ['triples']:
-                subjects += get_subjects_from_triples(block['triples'])
+    try:
+        for block in translateUpdate(parseUpdate(body)):
+            for key in block.keys():
+                if key in ['delete', 'insert']:
+                    subjects += get_subjects_from_quads(block[key]['quads'])
+                    subjects += get_subjects_from_triples(block[key]['triples'])
+                if key in ['quads']:
+                    subjects += get_subjects_from_quads(block['quads'])
+                if key in ['triples']:
+                    subjects += get_subjects_from_triples(block['triples'])
+    except RecursionError:
+        logger.error("SPARQL ERROR PARSING: %s", body)
 
     return subjects
 
