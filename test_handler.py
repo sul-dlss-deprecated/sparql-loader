@@ -39,8 +39,35 @@ def test_main_int():
             data = myfile.read()
 
     assert handler.main(
-        {'body': data, 'Content-Type': 'application/sparql-update'},
+        {'body': data, 'headers': {'Content-Type': 'application/sparql-update'}},
         "blank_context")['statusCode'] == 200
+
+
+def test_main_unhappy_path_int():
+    with open('fixtures/bad_insert.txt', 'r') as myfile:
+        data = myfile.read()
+
+    assert handler.main(
+        {'body': data, 'headers': {'Content-Type': 'application/sparql-update'}},
+        "blank_context")['statusCode'] == 400
+
+
+def test_main_unappy_path_unit():
+    with open('fixtures/decoded_query.txt', 'r') as myfile:
+        data = myfile.read()
+
+    assert handler.main({'body': data, 'headers': {'Content-Type': 'application/x-www-form-urlencoded'}},
+                        "blank_contenxt") == {'body': '[MalformedRequest] query string not properly escaped',  # noqa
+                                              'statusCode': 422}
+
+
+def test_main_unknown_content_type_unit():
+    with open('fixtures/encoded_query.txt', 'r') as myfile:
+        data = myfile.read()
+
+    assert handler.main({'body': data, 'headers': {'Content-Type': 'application/unknown'}},
+                        "blank_contenxt") == {'body': "[MalformedRequest] Invalid Content-Type: 'application/unknown'",  # noqa
+                                              'statusCode': 422}
 
 
 def test_get_entities_unit():
@@ -52,3 +79,19 @@ def test_get_entities_unit():
 
         for entity in test_case['out']:
             assert entity in entities
+
+
+def test_not_malformed_query_unit():
+    with open('fixtures/encoded_query.txt', 'r') as myfile:
+        data = myfile.read()
+
+    assert handler.is_malformed_query(data, "application/x-www-form-urlencoded") is None
+
+
+def test_malformed_query_unit():
+    with open('fixtures/decoded_query.txt', 'r') as myfile:
+        data = myfile.read()
+
+    assert handler.is_malformed_query(data, "application/x-www-form-urlencoded") == {
+        'body': "[MalformedRequest] query string not properly escaped",
+        'statusCode': 422}
