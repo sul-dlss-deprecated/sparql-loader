@@ -2,6 +2,7 @@
 import json
 import logging
 import os
+import sys
 import time
 import urllib.parse
 
@@ -24,6 +25,9 @@ VALID_CONTENT_TYPES = [
 # Setup the logger at the INFO level while we continue to profile
 logger = logging.getLogger()
 logger.setLevel(logging.INFO)
+
+# Set the recursion limit to catch long sparql statements
+sys.setrecursionlimit(10000)
 
 
 def main(event, _):
