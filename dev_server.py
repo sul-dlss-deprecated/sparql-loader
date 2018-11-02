@@ -21,7 +21,7 @@ class SparqlLoaderRequestHandler(BaseHTTPRequestHandler):
         finally:
             self.rfile.close()
         log.debug("Processing request")
-        response = handler.main({'body': body, 'Content-Type': self.headers['Content-Type']}, None)
+        response = handler.main({'body': body, 'headers': {'Content-Type': self.headers['Content-Type']}}, None)
         log.info("Response status code is %s", response['statusCode'])
         self.send_response(response['statusCode'])
         self.end_headers()
