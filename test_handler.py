@@ -95,3 +95,8 @@ def test_malformed_query_unit():
     assert handler.is_malformed_query(data, "application/x-www-form-urlencoded") == {
         'body': "[MalformedRequest] query string not properly escaped",
         'statusCode': 422}
+
+
+def test_clean_content_type_unit():
+    assert handler.clean_content_type('application/sparql-update') == 'application/sparql-update'
+    assert handler.clean_content_type('application/sparql-update; charset=utf-8') == 'application/sparql-update'

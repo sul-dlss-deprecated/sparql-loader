@@ -41,8 +41,10 @@ def main(event, _):
 
     # Verify that the body is properly encoded and has a supported content type
     # BEFORE setting up AWS resources
-    verify_query = is_malformed_query(request_body, request_content_type)
+    clean_request_content_type = clean_content_type(request_content_type)
+    verify_query = is_malformed_query(request_body, clean_request_content_type)
     if verify_query is not None:
+        logger.warning("Received bad query: {}".format(verify_query['body']))
         return verify_query
 
     sns_client = SnsClient(rialto_sns_endpoint, rialto_topic_arn, aws_region)
@@ -54,7 +56,7 @@ def main(event, _):
     logger.info("NEPTUNE ELAPSED: %f" % (time.time() - start_time))
 
     if status_code == 200:
-        if "update=" in request_body or request_content_type == SPARQL_UPDATE:
+        if "update=" in request_body or clean_request_content_type == SPARQL_UPDATE:
             start_time = time.time()
             logger.info("SPARQL PARSE START: " + time.asctime(time.localtime(start_time)))
             entities = get_unique_subjects(
@@ -146,3 +148,10 @@ def correctly_uri_encoded(body):
         return False
 
     return True
+
+
+# Cleans content type, e.g., to remove charset=utf-8
+def clean_content_type(content_type):
+    if not content_type:
+        return content_type
+    return content_type.split(';')[0]
