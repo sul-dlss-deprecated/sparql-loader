@@ -28,6 +28,13 @@ class SparqlLoaderRequestHandler(BaseHTTPRequestHandler):
         if response['body']:
             self.wfile.write(bytes(response['body'], "utf8"))
 
+    def do_GET(self):
+        """Respond to a GET request."""
+        self.send_response(200)
+        self.send_header('Content-type', 'text/plain')
+        self.end_headers()
+        self.wfile.write(bytes('OK', 'utf8'))
+
 
 def run(server_class=ThreadingHTTPServer, handler_class=SparqlLoaderRequestHandler):
     log.info("Starting server")
