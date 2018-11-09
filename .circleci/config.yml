@@ -20,3 +20,59 @@ jobs:
             pip3 install -r requirements.txt
             pycodestyle
             pytest -k unit # only run unit tests at this stage
+
+  deploy:
+    working_directory: ~/sparql-loader
+    docker:
+      - image: circleci/python:3.6.4  # primary container
+    steps:
+      - checkout # checkout source code to the working directory
+      - run: sudo chown -R circleci:circleci /usr/local/bin
+      - run: sudo chown -R circleci:circleci /usr/local/lib/python3.6/site-packages
+      - run: sudo pip install --upgrade pip
+      - run: sudo pip install awscli
+      - run:
+          command: |
+            python -m venv env
+            source env/bin/activate # load our virtual env
+            pip3 install -r requirements.txt
+            zip -r lambda.zip handler.py neptune_client.py sns_client.py
+            cd env/lib/python3.6/site-packages
+            zip -r ../../../../lambda.zip certifi
+            zip -r ../../../../lambda.zip chardet
+            zip -r ../../../../lambda.zip idna
+            zip -r ../../../../lambda.zip isodate
+            zip -r ../../../../lambda.zip pyparsing*
+            zip -r ../../../../lambda.zip rdflib
+            zip -r ../../../../lambda.zip requests
+            zip -r ../../../../lambda.zip urllib3
+      - run:
+          command: |
+          name: Update AWS S3 and Lambda
+          command: |
+            mkdir ~/.aws
+            echo -e "[circle]\naws_access_key_id=$CIRCLE_ACCESS_KEY_ID\naws_secret_access_key=$CIRCLE_SECRET_KEY\n" > ~/.aws/credentials
+            unset AWS_SESSION_TOKEN
+            aws configure set region us-west-2
+            aws configure set output json
+            temp_creds=$(aws sts assume-role --role-session-name DevelopersRole --role-arn $DEV_ROLE_ARN --profile circle | jq .Credentials)
+            export AWS_ACCESS_KEY_ID=$(echo "$temp_creds" | jq .AccessKeyId | xargs)
+            export AWS_SECRET_ACCESS_KEY=$(echo "$temp_creds" | jq .SecretAccessKey | xargs)
+            export AWS_SESSION_TOKEN=$(echo "$temp_creds" | jq .SessionToken | xargs)
+            aws configure list # Show confirmation of config
+            aws lambda update-function-code --function-name rialto-sparql-loader-development --zip-file fileb://lambda.zip
+            aws s3 cp lambda.zip s3://rialto-lambdas-west-development/rialto-sparql-loader-development/lambda.zip
+
+workflows:
+  version: 2
+
+  deploy-dev:
+    jobs:
+      - build:
+          filters:
+            branches:
+              ignore: master
+      - deploy:
+          filters:
+            branches:
+              only: master
