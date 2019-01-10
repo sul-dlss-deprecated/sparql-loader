@@ -29,7 +29,13 @@ test_cases = [
         "name": "Test short name in literal",
         "file": "short_name.txt",
         "out": ['http://sul.stanford.edu/rialto/agents/people/189479']
+    },
+    {
+        "name": "Test an encoded URI",
+        "file": "encoded_uri.txt",
+        "out": ['http://sul.stanford.edu/rialto/publications/b4c55de33ec03ae4fe89c65b67015f56']
     }
+
 ]
 
 

@@ -1,0 +1,3 @@
+INSERT DATA { GRAPH <http://sul.stanford.edu/rialto/graphs/wos> {
+<http://sul.stanford.edu/rialto/publications/b4c55de33ec03ae4fe89c65b67015f56> <http://purl.org/ontology/bibo/doi> <https://doi.org/10.1002%2F1097-0142%28197501%2935%3A1%3C148%3A%3AAID-CNCR2820350121%3E3.0.CO%3B2-Q> .
+}};
