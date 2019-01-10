@@ -56,18 +56,25 @@ def main(event, _):
     logger.info("NEPTUNE ELAPSED: %f" % (time.time() - start_time))
 
     if status_code == 200:
-        if "update=" in request_body or clean_request_content_type == SPARQL_UPDATE:
-            start_time = time.time()
-            logger.info("SPARQL PARSE START: " + time.asctime(time.localtime(start_time)))
+        entities = []
+        start_time = time.time()
+        logger.info("SPARQL PARSE START: " + time.asctime(time.localtime(start_time)))
+
+        if "update=" in request_body and clean_request_content_type == URL_ENCODED:
             entities = get_unique_subjects(
                             get_entities(
                                 urllib.parse.unquote_plus(
                                     request_body).replace('update=', '')))
-            logger.info("SPARQL PARSE ELAPSED: %f" % (time.time() - start_time))
 
-            if entities:
-                message = {"Action": "touch", "Entities": entities}
-                _ = sns_client.publish(json.dumps(message))  # currently not using the neptune response
+        if clean_request_content_type == SPARQL_UPDATE:
+            entities = get_unique_subjects(
+                            get_entities(request_body))
+
+        if entities:
+            message = {"Action": "touch", "Entities": entities}
+            _ = sns_client.publish(json.dumps(message))  # currently not using the neptune response
+
+        logger.info("SPARQL PARSE ELAPSED: %f" % (time.time() - start_time))
 
     return {
         'body': str(response),
