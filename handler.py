@@ -1,4 +1,3 @@
-
 import json
 import logging
 import os
@@ -8,6 +7,7 @@ import urllib.parse
 
 from rdflib.plugins.sparql.parser import parseUpdate
 from rdflib.plugins.sparql.algebra import translateUpdate
+from pyparsing import ParseException
 
 from sns_client import SnsClient
 from neptune_client import NeptuneClient
@@ -59,7 +59,6 @@ def main(event, _):
         entities = []
         start_time = time.time()
         logger.info("SPARQL PARSE START: " + time.asctime(time.localtime(start_time)))
-
         if "update=" in request_body and clean_request_content_type == URL_ENCODED:
             entities = get_unique_subjects(
                             get_entities(
@@ -107,7 +106,8 @@ def parse_body(body):
                     subjects += get_subjects_from_quads(block['quads'])
                 if key in ['triples']:
                     subjects += get_subjects_from_triples(block['triples'])
-    except RecursionError:
+    except (RecursionError, ParseException):
+        # Swallow a parse error, since the sparql made it to Neptune
         logger.error("SPARQL ERROR PARSING: %s", body)
 
     return subjects

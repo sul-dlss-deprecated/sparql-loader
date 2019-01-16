@@ -58,13 +58,22 @@ def test_main_unhappy_path_int():
         "blank_context")['statusCode'] == 400
 
 
-def test_main_unappy_path_unit():
+def test_main_unhappy_path_unit():
     with open('fixtures/decoded_query.txt', 'r') as myfile:
         data = myfile.read()
 
     assert handler.main({'body': data, 'headers': {'Content-Type': 'application/x-www-form-urlencoded'}},
-                        "blank_contenxt") == {'body': '[MalformedRequest] query string not properly escaped',  # noqa
+                        "blank_context") == {'body': '[MalformedRequest] query string not properly escaped',  # noqa
                                               'statusCode': 422}
+
+
+def test_parse_body_unhappy_unit():
+    body = 'x'
+    with open('fixtures/etl_orgs.txt', 'r') as myfile:
+        body += myfile.read()
+
+    # Parse exception is swallowed.
+    assert handler.parse_body(body) == []
 
 
 def test_main_unknown_content_type_unit():
