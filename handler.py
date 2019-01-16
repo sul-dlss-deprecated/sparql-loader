@@ -51,14 +51,12 @@ def main(event, _):
     neptune_client = NeptuneClient(rialto_sparql_endpoint)
 
     start_time = time.time()
-    logger.info("NEPTUNE START: " + time.asctime(time.localtime(start_time)))
     response, status_code = neptune_client.post(request_body, request_content_type)
     logger.info("NEPTUNE ELAPSED: %f" % (time.time() - start_time))
 
     if status_code == 200:
         entities = []
         start_time = time.time()
-        logger.info("SPARQL PARSE START: " + time.asctime(time.localtime(start_time)))
         if "update=" in request_body and clean_request_content_type == URL_ENCODED:
             entities = get_unique_subjects(
                             get_entities(
@@ -74,6 +72,8 @@ def main(event, _):
             _ = sns_client.publish(json.dumps(message))  # currently not using the neptune response
 
         logger.info("SPARQL PARSE ELAPSED: %f" % (time.time() - start_time))
+    else:
+        logger.error("NEPTUNE RETURNED %s: %s" % (status_code, response))
 
     return {
         'body': str(response),
