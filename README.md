@@ -46,7 +46,7 @@ docker-compose up
 
 2. Run the test
 ```shell
-pytest -vv
+AWS_ACCESS_KEY_ID=999999 AWS_SECRET_ACCESS_KEY=1231 pytest -vv
 ```
 
 ### Building an AWS Lambda deployment package
