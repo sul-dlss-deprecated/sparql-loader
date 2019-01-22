@@ -1,4 +1,6 @@
 import handler
+import os
+import botocore
 
 test_cases = [
     {
@@ -47,6 +49,30 @@ def test_main_int():
     assert handler.main(
         {'body': data, 'headers': {'Content-Type': 'application/sparql-update'}},
         "blank_context")['statusCode'] == 200
+
+
+def test_skip_sns_int():
+    with open('fixtures/etl_orgs.txt', 'r') as myfile:
+        data = myfile.read()
+
+    # Expect that pointing at non-existent SNS endpoint will cause an exception
+    os.environ['RIALTO_SNS_ENDPOINT'] = 'http://xxxlocalhost:4575'
+    caught_exception = False
+    try:
+        assert handler.main(
+            {'body': data, 'headers': {'Content-Type': 'application/sparql-update'}},
+            "blank_context")
+    except botocore.exceptions.EndpointConnectionError:
+        caught_exception = True
+    assert caught_exception
+
+    # However, setting to skip SNS should mean that an exception isn't raised.
+    os.environ['RIALTO_SNS_SKIP'] = 'true'
+    assert handler.main(
+        {'body': data, 'headers': {'Content-Type': 'application/sparql-update'}},
+        "blank_context")['statusCode'] == 200
+    del os.environ['RIALTO_SNS_ENDPOINT']
+    del os.environ['RIALTO_SNS_SKIP']
 
 
 def test_main_unhappy_path_int():
