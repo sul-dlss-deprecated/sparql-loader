@@ -55,23 +55,24 @@ def main(event, _):
     logger.info("NEPTUNE ELAPSED: %f" % (time.time() - start_time))
 
     if status_code == 200:
-        entities = []
-        start_time = time.time()
-        if "update=" in request_body and clean_request_content_type == URL_ENCODED:
-            entities = get_unique_subjects(
-                            get_entities(
-                                urllib.parse.unquote_plus(
-                                    request_body).replace('update=', '')))
+        if os.getenv('RIALTO_SNS_SKIP', 'false').lower() != 'true':
+            entities = []
+            start_time = time.time()
+            if "update=" in request_body and clean_request_content_type == URL_ENCODED:
+                entities = get_unique_subjects(
+                                get_entities(
+                                    urllib.parse.unquote_plus(
+                                        request_body).replace('update=', '')))
 
-        if clean_request_content_type == SPARQL_UPDATE:
-            entities = get_unique_subjects(
-                            get_entities(request_body))
+            if clean_request_content_type == SPARQL_UPDATE:
+                entities = get_unique_subjects(
+                                get_entities(request_body))
 
-        if entities:
-            message = {"Action": "touch", "Entities": entities}
-            _ = sns_client.publish(json.dumps(message))  # currently not using the neptune response
+            if entities:
+                message = {"Action": "touch", "Entities": entities}
+                _ = sns_client.publish(json.dumps(message))  # currently not using the neptune response
 
-        logger.info("SPARQL PARSE ELAPSED: %f" % (time.time() - start_time))
+            logger.info("SPARQL PARSE ELAPSED: %f" % (time.time() - start_time))
     else:
         logger.error("NEPTUNE RETURNED %s: %s" % (status_code, response))
 
